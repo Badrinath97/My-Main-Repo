@@ -1,14 +1,19 @@
 import { LightningElement, api } from "lwc";
-import { customSeasonName, statusBadgeClass } from "c/mediaTrackerUtils";
+import {
+  customSeasonName,
+  posterTheme,
+  statusKey,
+  statusPillClass
+} from "c/mediaTrackerUtils";
 
 const FALLBACK_ICON = "utility:open_folder";
 
 /**
  * Presentational card for one media item. Holds no data logic - it only
  * renders the item and raises intent events for the parent to handle:
- *   edit | delete | favorite  -> detail: { id }
- *   progress                  -> detail: { id, step }
- *   collectionselect          -> detail: { id, collectionId }
+ *   open | edit | delete | favorite -> detail: { id }
+ *   progress                        -> detail: { id, step }
+ *   collectionselect                -> detail: { id, collectionId }
  */
 export default class MediaCard extends LightningElement {
   @api item;
@@ -19,12 +24,25 @@ export default class MediaCard extends LightningElement {
 
   posterFailed = false;
 
+  get isGrid() {
+    return this.variant !== "list";
+  }
+
+  get isList() {
+    return !this.isGrid;
+  }
+
   get containerClass() {
-    return `card card_${this.variant === "list" ? "list" : "grid"}`;
+    return `card card_${this.isGrid ? "grid" : "list"} card_${statusKey(this.item?.status)}`;
   }
 
   get showPoster() {
     return Boolean(this.item?.posterUrl) && !this.posterFailed;
+  }
+
+  /** Colourful gradient for items without a poster; stable per title. */
+  get placeholderClass() {
+    return `poster poster_placeholder theme_${posterTheme(this.item?.title)}`;
   }
 
   get iconName() {
@@ -33,6 +51,10 @@ export default class MediaCard extends LightningElement {
 
   get typeLabel() {
     return this.typeConfig?.label || this.item?.mediaType;
+  }
+
+  get openLabel() {
+    return `Open details for ${this.item?.title}`;
   }
 
   get subtitle() {
@@ -57,7 +79,7 @@ export default class MediaCard extends LightningElement {
   }
 
   get statusClass() {
-    return statusBadgeClass(this.item?.status);
+    return statusPillClass(this.item?.status);
   }
 
   get hasRating() {
@@ -121,6 +143,14 @@ export default class MediaCard extends LightningElement {
     return this.item?.progressPercent || 0;
   }
 
+  get progressFillClass() {
+    return `fill fill_${statusKey(this.item?.status)}`;
+  }
+
+  get progressFillStyle() {
+    return `width: ${this.progressValue}%`;
+  }
+
   get progressLabel() {
     const current = this.item?.progressCurrent || 0;
     const total = this.item?.progressTotal;
@@ -142,12 +172,24 @@ export default class MediaCard extends LightningElement {
     this.posterFailed = true;
   }
 
+  handleOpen() {
+    this.fire("open");
+  }
+
+  /** The poster acts as a button, so it must also work from the keyboard. */
+  handlePosterKeydown(event) {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      this.handleOpen();
+    }
+  }
+
   handleFavorite() {
     this.fire("favorite");
   }
 
   handleMenuSelect(event) {
-    this.fire(event.detail.value); // 'edit' | 'delete'
+    this.fire(event.detail.value); // 'open' | 'edit' | 'delete'
   }
 
   handleCollection() {

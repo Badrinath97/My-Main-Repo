@@ -1,0 +1,309 @@
+@import "c/mediaTrackerStyles";
+
+:host {
+  display: block;
+}
+
+/* ------------------------------------------------------------------ hero */
+.hero {
+  position: relative;
+  overflow: hidden;
+  border-radius: 0.875rem;
+  color: #fff;
+  background: #111827;
+}
+
+.backdrop {
+  position: absolute;
+  inset: -24px;
+  background-size: cover;
+  background-position: center;
+  filter: blur(22px) brightness(0.55) saturate(1.2);
+  transform: scale(1.1);
+}
+
+.hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(17, 24, 39, 0.85) 0%,
+    rgba(17, 24, 39, 0.45) 100%
+  );
+}
+
+.hero-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: 1.25rem;
+  padding: 1.25rem;
+  align-items: flex-end;
+}
+
+.poster-frame {
+  flex: 0 0 150px;
+  aspect-ratio: 2 / 3;
+  border-radius: 0.625rem;
+  overflow: hidden;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+}
+
+.poster {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.poster_placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.headline {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.tagline {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+.title {
+  margin: 0.125rem 0 0.5rem;
+  font-size: 1.75rem;
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.favorite {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #f9a8d4;
+}
+
+.stars {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.0625rem;
+}
+
+.star {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.star_on {
+  color: #fcd34d;
+}
+
+.rating-value {
+  margin-left: 0.375rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.overall {
+  margin-top: 0.875rem;
+  max-width: 420px;
+}
+
+.overall-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.25rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.hero .track {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* --------------------------------------------------------------- content */
+.content {
+  padding: 1rem 0.25rem 0.25rem;
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.fact {
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  background: var(--slds-g-color-neutral-base-95, #f6f7f9);
+}
+
+.fact dt {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--slds-g-color-neutral-base-50, #747474);
+}
+
+.fact dd {
+  margin: 0.125rem 0 0;
+  font-weight: 600;
+}
+
+.section {
+  margin-top: 1rem;
+}
+
+.section-title {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.count {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--slds-g-color-neutral-base-50, #747474);
+}
+
+/* -------------------------------------------------------- seasons table */
+.table {
+  border: 1px solid var(--slds-g-color-border-base-1, #e5e7eb);
+  border-radius: 0.625rem;
+  overflow: hidden;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 2.5rem minmax(0, 2fr) minmax(0, 1.5fr);
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border-top: 1px solid var(--slds-g-color-border-base-1, #e5e7eb);
+  font-size: 0.8125rem;
+}
+
+/* One extra column per visible date (Aired / Completed). */
+.table_dates1 .row {
+  grid-template-columns: 2.5rem minmax(0, 2fr) minmax(0, 1.5fr) 7rem;
+}
+
+.table_dates2 .row {
+  grid-template-columns: 2.5rem minmax(0, 2fr) minmax(0, 1.5fr) 7rem 7rem;
+}
+
+.row_head {
+  border-top: none;
+  background: var(--slds-g-color-neutral-base-95, #f6f7f9);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--slds-g-color-neutral-base-50, #747474);
+}
+
+.row_current {
+  background: #f0f7ff;
+}
+
+.col_num {
+  font-weight: 700;
+  color: var(--slds-g-color-neutral-base-50, #747474);
+}
+
+.col_name {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  min-width: 0;
+}
+
+.season-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.now {
+  padding: 0 0.375rem;
+  border-radius: 999px;
+  background: #1b96ff;
+  color: #fff;
+  font-size: 0.625rem;
+  font-weight: 700;
+  line-height: 1rem;
+}
+
+.col_progress {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.episodes {
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.track_small {
+  display: block;
+  height: 4px;
+}
+
+.track_small .fill {
+  display: block;
+}
+
+.col_date {
+  color: var(--slds-g-color-neutral-base-30, #444);
+}
+
+/* ---------------------------------------------------------------- movies */
+.movies {
+  display: grid;
+  gap: 0.375rem;
+}
+
+.movie {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--slds-g-color-border-base-1, #e5e7eb);
+  border-radius: 0.5rem;
+}
+
+.movie-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-weight: 600;
+}
+
+.movie-date {
+  font-size: 0.75rem;
+  color: var(--slds-g-color-neutral-base-50, #747474);
+}
+
+.notes {
+  white-space: pre-line;
+  line-height: 1.5;
+}

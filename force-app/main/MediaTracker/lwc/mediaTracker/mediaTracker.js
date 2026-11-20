@@ -1,4 +1,5 @@
 import { LightningElement, api, wire } from "lwc";
+import { NavigationMixin } from "lightning/navigation";
 import { ShowToastEvent } from "lightning/platformShowToastEvent";
 import LightningConfirm from "lightning/confirm";
 import { getObjectInfo, getPicklistValues } from "lightning/uiObjectInfoApi";
@@ -17,6 +18,7 @@ import getCollections from "@salesforce/apex/MediaTrackerController.getCollectio
 import deleteCollection from "@salesforce/apex/MediaTrackerController.deleteCollection";
 import MediaItemForm from "c/mediaItemForm";
 import MediaCollectionForm from "c/mediaCollectionForm";
+import MediaItemDetailModal from "c/mediaItemDetailModal";
 import {
   SORT_OPTIONS,
   collectionOptions,
@@ -41,11 +43,12 @@ const toOptions = (data) =>
  *   c-media-collection-list collections (franchises, universes) as a tree
  *   c-media-item-form       create / edit item modal
  *   c-media-collection-form create / edit collection modal
+ *   c-media-item-detail-modal read-only details (poster, seasons, movies)
  *
  * Drop several instances on different pages with different settings,
  * e.g. an "Anime" tab restricted via mediaTypes="Anime".
  */
-export default class MediaTracker extends LightningElement {
+export default class MediaTracker extends NavigationMixin(LightningElement) {
   @api cardTitle = "My Media Tracker";
   /** Comma-separated Media_Type__c values this instance is limited to. Blank = all. */
   @api mediaTypes = "";
@@ -331,6 +334,32 @@ export default class MediaTracker extends LightningElement {
 
   handleAdd() {
     this.openForm();
+  }
+
+  /** Opens the details window; it can lead on to Edit or the record page. */
+  async handleOpen(event) {
+    const item = this.items.find((i) => i.id === event.detail.id);
+    if (!item) {
+      return;
+    }
+    const action = await MediaItemDetailModal.open({
+      size: "medium",
+      label: item.title,
+      item,
+      typeConfig: this.typeConfigs.find((c) => c.value === item.mediaType)
+    });
+    if (action === "edit") {
+      this.openForm(item);
+    } else if (action === "record") {
+      this[NavigationMixin.Navigate]({
+        type: "standard__recordPage",
+        attributes: {
+          recordId: item.id,
+          objectApiName: "Media_Item__c",
+          actionName: "view"
+        }
+      });
+    }
   }
 
   handleEdit(event) {

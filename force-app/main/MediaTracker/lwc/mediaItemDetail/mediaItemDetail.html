@@ -1,0 +1,158 @@
+<template>
+  <section class="hero">
+    <div class={backdropClass} style={backdropStyle}></div>
+    <div class="hero-content">
+      <div class="poster-frame">
+        <template lwc:if={showPoster}>
+          <img
+            class="poster"
+            src={item.posterUrl}
+            alt={item.title}
+            onerror={handlePosterError}
+          />
+        </template>
+        <template lwc:else>
+          <div class={placeholderClass}>
+            <lightning-icon
+              icon-name={iconName}
+              size="large"
+              variant="inverse"
+              alternative-text={typeLabel}
+            ></lightning-icon>
+          </div>
+        </template>
+      </div>
+
+      <div class="headline">
+        <p class="tagline">{tagline}</p>
+        <h2 class="title">{item.title}</h2>
+        <div class="meta">
+          <span class={statusClass}>{item.status}</span>
+          <template lwc:if={item.isFavorite}>
+            <span class="favorite" title="Favorite">&#9829; Favorite</span>
+          </template>
+          <template lwc:if={hasRating}>
+            <span class="stars" title={ratingLabel}>
+              <template for:each={stars} for:item="star">
+                <span key={star.key} class={star.className}>&#9733;</span>
+              </template>
+              <span class="rating-value">{ratingLabel}</span>
+            </span>
+          </template>
+        </div>
+
+        <template lwc:if={tracksProgress}>
+          <div class="overall">
+            <div class="overall-row">
+              <span>{progressLabel}</span>
+              <span class="percent">{progressPercent}%</span>
+            </div>
+            <div class="track">
+              <div class={progressFillClass} style={progressFillStyle}></div>
+            </div>
+          </div>
+        </template>
+      </div>
+    </div>
+  </section>
+
+  <div class="content">
+    <template lwc:if={hasFacts}>
+      <dl class="facts">
+        <template for:each={facts} for:item="fact">
+          <div key={fact.key} class="fact">
+            <dt>{fact.label}</dt>
+            <dd>{fact.value}</dd>
+          </div>
+        </template>
+      </dl>
+    </template>
+
+    <template lwc:if={showSeasons}>
+      <section class="section">
+        <h3 class="section-title">
+          Seasons <span class="count">{seasonCountLabel}</span>
+        </h3>
+        <div class={seasonTableClass}>
+          <div class="row row_head">
+            <span class="col_num">#</span>
+            <span class="col_name">Season</span>
+            <span class="col_progress">Episodes</span>
+            <template lwc:if={showSeasonAired}>
+              <span class="col_date">Aired</span>
+            </template>
+            <template lwc:if={showSeasonCompleted}>
+              <span class="col_date">Completed</span>
+            </template>
+          </div>
+          <template for:each={seasonRows} for:item="season">
+            <div key={season.key} class={season.rowClass}>
+              <span class="col_num">{season.number}</span>
+              <span class="col_name">
+                <span class="season-name">{season.name}</span>
+                <template lwc:if={season.isCurrent}>
+                  <span class="now">Watching</span>
+                </template>
+                <template lwc:if={season.isComplete}>
+                  <lightning-icon
+                    icon-name="utility:success"
+                    variant="success"
+                    size="xx-small"
+                    alternative-text="Finished"
+                  ></lightning-icon>
+                </template>
+              </span>
+              <span class="col_progress">
+                <span class="episodes">{season.episodes}</span>
+                <span class="track track_small">
+                  <span
+                    class={season.fillClass}
+                    style={season.fillStyle}
+                  ></span>
+                </span>
+              </span>
+              <template lwc:if={showSeasonAired}>
+                <span class="col_date">{season.aired}</span>
+              </template>
+              <template lwc:if={showSeasonCompleted}>
+                <span class="col_date">{season.completed}</span>
+              </template>
+            </div>
+          </template>
+        </div>
+      </section>
+    </template>
+
+    <template lwc:if={showMovies}>
+      <section class="section">
+        <h3 class="section-title">
+          Movies <span class="count">{movieSummary}</span>
+        </h3>
+        <ul class="movies">
+          <template for:each={movieRows} for:item="movie">
+            <li key={movie.key} class="movie">
+              <lightning-icon
+                icon-name={movie.iconName}
+                variant={movie.iconVariant}
+                size="x-small"
+                alternative-text={movie.iconLabel}
+                title={movie.iconLabel}
+              ></lightning-icon>
+              <span class="movie-name">{movie.name}</span>
+              <template lwc:if={showMovieAired}>
+                <span class="movie-date">{movie.aired}</span>
+              </template>
+            </li>
+          </template>
+        </ul>
+      </section>
+    </template>
+
+    <template lwc:if={showNotes}>
+      <section class="section">
+        <h3 class="section-title">Notes</h3>
+        <p class="notes">{item.notes}</p>
+      </section>
+    </template>
+  </div>
+</template>

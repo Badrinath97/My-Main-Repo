@@ -3,6 +3,8 @@
  * Import with: import { ... } from 'c/mediaTrackerUtils';
  */
 
+import LOCALE from "@salesforce/i18n/locale";
+
 export const STATUS = Object.freeze({
   PLANNED: "Planned",
   IN_PROGRESS: "In Progress",
@@ -76,6 +78,55 @@ export function collectionWithDescendants(collections, rootId) {
 export function customSeasonName(season) {
   const name = (season?.name || "").trim();
   return name === `Season ${season?.seasonNumber}` ? "" : name;
+}
+
+const STATUS_KEYS = {
+  [STATUS.PLANNED]: "planned",
+  [STATUS.IN_PROGRESS]: "progress",
+  [STATUS.ON_HOLD]: "hold",
+  [STATUS.COMPLETED]: "completed",
+  [STATUS.DROPPED]: "dropped"
+};
+
+/** CSS-friendly key for a status: 'planned' | 'progress' | 'hold' | 'completed' | 'dropped' | 'other'. */
+export function statusKey(status) {
+  return STATUS_KEYS[status] || "other";
+}
+
+/** Status pill classes; colours live in each component's CSS (.pill_<key>). */
+export function statusPillClass(status) {
+  return `pill pill_${statusKey(status)}`;
+}
+
+const POSTER_THEMES = 6;
+
+/** Stable 0..5 theme index for a poster placeholder, so each title keeps its colour. */
+export function posterTheme(seed) {
+  let hash = 0;
+  for (const ch of String(seed || "")) {
+    hash = (hash * 31 + ch.charCodeAt(0)) % 9973;
+  }
+  return hash % POSTER_THEMES;
+}
+
+/**
+ * "2002-10-03" -> "Oct 3, 2002", in the user's Salesforce locale
+ * (e.g. "3 Oct 2002" for en_IN). Date-only values are read as UTC.
+ */
+export function formatDate(value) {
+  if (!value) {
+    return "";
+  }
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+  return new Intl.DateTimeFormat(LOCALE, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    timeZone: "UTC"
+  }).format(date);
 }
 
 export function statusBadgeClass(status) {

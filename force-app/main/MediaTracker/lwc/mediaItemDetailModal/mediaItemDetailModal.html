@@ -1,0 +1,32 @@
+<template>
+  <lightning-modal-body>
+    <c-media-item-detail
+      item={item}
+      type-config={typeConfig}
+    ></c-media-item-detail>
+  </lightning-modal-body>
+
+  <lightning-modal-footer>
+    <div class="footer">
+      <lightning-button
+        variant="base"
+        label="Open record page"
+        icon-name="utility:new_window"
+        onclick={handleRecord}
+      ></lightning-button>
+      <div>
+        <lightning-button
+          label="Close"
+          onclick={handleClose}
+        ></lightning-button>
+        <lightning-button
+          class="slds-m-left_x-small"
+          variant="brand"
+          label="Edit"
+          icon-name="utility:edit"
+          onclick={handleEdit}
+        ></lightning-button>
+      </div>
+    </div>
+  </lightning-modal-footer>
+</template>

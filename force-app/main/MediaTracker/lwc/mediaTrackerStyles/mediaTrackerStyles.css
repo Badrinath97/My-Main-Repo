@@ -1,0 +1,114 @@
+/*
+ * Shared Media Tracker styles. Import in a component's CSS with:
+ *   @import 'c/mediaTrackerStyles';
+ * Status keys come from mediaTrackerUtils.statusKey().
+ */
+
+/* ---------------------------------------------------------- status pills */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.25rem;
+  white-space: nowrap;
+}
+
+.pill_planned,
+.pill_other {
+  background: #eef1f6;
+  color: #3e4c63;
+}
+
+.pill_progress {
+  background: #e3f0ff;
+  color: #0b5cab;
+}
+
+.pill_hold {
+  background: #fff1d6;
+  color: #8c4b02;
+}
+
+.pill_completed {
+  background: #dcf5e6;
+  color: #1b6e3a;
+}
+
+.pill_dropped {
+  background: #fde4e4;
+  color: #a61a1a;
+}
+
+/* --------------------------------------------------------- progress bars */
+.track {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--slds-g-color-neutral-base-90, #e5e5e5);
+  overflow: hidden;
+}
+
+.fill {
+  height: 100%;
+  border-radius: inherit;
+  background: #1b96ff;
+  transition: width 0.3s ease;
+}
+
+.fill_planned,
+.fill_other {
+  background: #8e9bb0;
+}
+
+.fill_progress {
+  background: linear-gradient(90deg, #1b96ff, #5a7cf9);
+}
+
+.fill_hold {
+  background: #dd7a01;
+}
+
+.fill_completed {
+  background: linear-gradient(90deg, #2e844a, #45c65a);
+}
+
+.fill_dropped {
+  background: #ba0517;
+}
+
+/* ------------------------------------------- poster placeholder colours */
+.theme_0 {
+  background: linear-gradient(135deg, #5a67d8, #9f7aea);
+}
+
+.theme_1 {
+  background: linear-gradient(135deg, #ed64a6, #f6ad55);
+}
+
+.theme_2 {
+  background: linear-gradient(135deg, #38b2ac, #4299e1);
+}
+
+.theme_3 {
+  background: linear-gradient(135deg, #f56565, #ed8936);
+}
+
+.theme_4 {
+  background: linear-gradient(135deg, #48bb78, #38b2ac);
+}
+
+.theme_5 {
+  background: linear-gradient(135deg, #2d3748, #667eea);
+}
+
+/* ---------------------------------------------------------------- rating */
+.star-rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.125rem;
+  font-weight: 700;
+  color: #b7791f;
+}

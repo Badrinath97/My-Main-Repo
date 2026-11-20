@@ -9,23 +9,21 @@
           onclick={handleTileClick}
         >
           <span class="value">{tile.value}</span>
-          <span class="label">{tile.label}</span>
+          <span class="label"><span class="dot"></span>{tile.label}</span>
         </button>
       </template>
-      <div class="tile tile_static">
+      <div class="tile tile_static tile_favorites">
         <span class="value">{stats.favorites}</span>
-        <span class="label">Favorites</span>
+        <span class="label">&#9829; Favorites</span>
       </div>
-      <div class="tile tile_static">
+      <div class="tile tile_static tile_rating">
         <span class="value">{averageRating}</span>
-        <span class="label">Avg rating</span>
+        <span class="label">&#9733; Avg rating</span>
       </div>
     </div>
     <div class="types">
       <template for:each={typeBreakdown} for:item="type">
-        <span key={type.key} class="slds-badge slds-badge_lightest"
-          >{type.label}</span
-        >
+        <span key={type.key} class="type-chip">{type.label}</span>
       </template>
     </div>
   </template>

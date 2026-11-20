@@ -1,28 +1,59 @@
 <template>
   <article class={containerClass}>
-    <div class="media">
+    <div
+      class="media"
+      role="button"
+      tabindex="0"
+      aria-label={openLabel}
+      title={openLabel}
+      onclick={handleOpen}
+      onkeydown={handlePosterKeydown}
+    >
       <template lwc:if={showPoster}>
         <img
           class="poster"
           src={item.posterUrl}
           alt={item.title}
+          loading="lazy"
           onerror={handlePosterError}
         />
       </template>
       <template lwc:else>
-        <div class="poster poster_placeholder">
+        <div class={placeholderClass}>
           <lightning-icon
             icon-name={iconName}
-            size="medium"
+            size="large"
+            variant="inverse"
             alternative-text={typeLabel}
           ></lightning-icon>
+        </div>
+      </template>
+
+      <template lwc:if={isGrid}>
+        <div class="shade"></div>
+        <span class="chip chip_type">{typeLabel}</span>
+        <div class="overlay">
+          <span class={statusClass}>{item.status}</span>
+          <template lwc:if={hasRating}>
+            <span class="chip rating" title="Your rating"
+              >&#9733; {ratingLabel}</span
+            >
+          </template>
         </div>
       </template>
     </div>
 
     <div class="body">
       <div class="header">
-        <h3 class="title slds-truncate" title={item.title}>{item.title}</h3>
+        <h3 class="heading">
+          <button
+            class="title slds-truncate"
+            title={item.title}
+            onclick={handleOpen}
+          >
+            {item.title}
+          </button>
+        </h3>
         <lightning-button-icon-stateful
           icon-name="utility:favorite"
           selected={item.isFavorite}
@@ -37,6 +68,11 @@
           onselect={handleMenuSelect}
         >
           <lightning-menu-item
+            value="open"
+            label="View details"
+            prefix-icon-name="utility:preview"
+          ></lightning-menu-item>
+          <lightning-menu-item
             value="edit"
             label="Edit"
             prefix-icon-name="utility:edit"
@@ -50,12 +86,7 @@
       </div>
 
       <template lwc:if={subtitle}>
-        <p
-          class="slds-text-body_small slds-text-color_weak slds-truncate"
-          title={subtitle}
-        >
-          {subtitle}
-        </p>
+        <p class="subtitle slds-truncate" title={subtitle}>{subtitle}</p>
       </template>
 
       <template lwc:if={hasCollection}>
@@ -73,16 +104,21 @@
         </button>
       </template>
 
-      <div class="badges">
-        <span class="slds-badge slds-badge_lightest">{typeLabel}</span>
-        <span class={statusClass}>{item.status}</span>
-        <template lwc:if={hasRating}>
-          <span class="rating" title="Your rating">&#9733; {ratingLabel}</span>
-        </template>
-      </div>
+      <!-- In the list view the poster is small, so these sit in the body. -->
+      <template lwc:if={isList}>
+        <div class="badges">
+          <span class="chip chip_outline">{typeLabel}</span>
+          <span class={statusClass}>{item.status}</span>
+          <template lwc:if={hasRating}>
+            <span class="star-rating rating" title="Your rating"
+              >&#9733; {ratingLabel}</span
+            >
+          </template>
+        </div>
+      </template>
 
       <template lwc:if={hasMovies}>
-        <p class="movies slds-text-body_small" title={movieTitles}>
+        <p class="movies" title={movieTitles}>
           <lightning-icon
             icon-name="utility:video"
             size="xx-small"
@@ -95,15 +131,20 @@
       <template lwc:if={tracksProgress}>
         <div class="progress">
           <template lwc:if={hasSeasons}>
-            <p class="season slds-text-body_small">{seasonLabel}</p>
+            <p class="season">{seasonLabel}</p>
           </template>
-          <lightning-progress-bar
-            value={progressValue}
-            size="small"
-          ></lightning-progress-bar>
+          <div
+            class="track"
+            role="progressbar"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            aria-valuenow={progressValue}
+          >
+            <div class={progressFillClass} style={progressFillStyle}></div>
+          </div>
           <div class="progress-row">
-            <span class="slds-text-body_small">{progressLabel}</span>
-            <div>
+            <span class="progress-label">{progressLabel}</span>
+            <div class="steppers">
               <lightning-button-icon
                 icon-name="utility:dash"
                 variant="border-filled"
@@ -113,7 +154,6 @@
                 onclick={handleDecrement}
               ></lightning-button-icon>
               <lightning-button-icon
-                class="slds-m-left_xx-small"
                 icon-name="utility:add"
                 variant="border-filled"
                 size="x-small"

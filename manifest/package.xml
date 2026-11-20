@@ -111,9 +111,12 @@
         <members>mediaCollectionForm</members>
         <members>mediaCollectionList</members>
         <members>mediaFilterBar</members>
+        <members>mediaItemDetail</members>
+        <members>mediaItemDetailModal</members>
         <members>mediaItemForm</members>
         <members>mediaStats</members>
         <members>mediaTracker</members>
+        <members>mediaTrackerStyles</members>
         <members>mediaTrackerUtils</members>
         <name>LightningComponentBundle</name>
     </types>

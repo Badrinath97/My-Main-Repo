@@ -1,4 +1,5 @@
 import { LightningElement, api } from "lwc";
+import { statusKey } from "c/mediaTrackerUtils";
 
 /**
  * Summary tiles for a MediaStatsData object.
@@ -20,7 +21,9 @@ export default class MediaStats extends LightningElement {
       label,
       value,
       status,
-      className: `tile${status === this.activeStatus ? " tile_active" : ""}`
+      className: `tile tile_${status ? statusKey(status) : "total"}${
+        status === this.activeStatus ? " tile_active" : ""
+      }`
     });
     return [
       tile("total", "Total", s.total, ""),

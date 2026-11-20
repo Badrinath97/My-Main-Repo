@@ -5,6 +5,23 @@ import getMediaItems from "@salesforce/apex/MediaTrackerController.getMediaItems
 import getStats from "@salesforce/apex/MediaTrackerController.getStats";
 import incrementProgress from "@salesforce/apex/MediaTrackerController.incrementProgress";
 import getCollections from "@salesforce/apex/MediaTrackerController.getCollections";
+import { mockNavigate } from "lightning/navigation";
+import MediaItemForm from "c/mediaItemForm";
+import MediaItemDetailModal from "c/mediaItemDetailModal";
+
+// Records every NavigationMixin.Navigate call so the test can inspect it.
+jest.mock("lightning/navigation", () => {
+  const Navigate = Symbol("Navigate");
+  const navigate = jest.fn();
+  const NavigationMixin = (Base) =>
+    class extends Base {
+      [Navigate](pageReference) {
+        navigate(pageReference);
+      }
+    };
+  NavigationMixin.Navigate = Navigate;
+  return { __esModule: true, NavigationMixin, mockNavigate: navigate };
+});
 
 jest.mock(
   "@salesforce/apex/MediaTrackerController.getTypeConfigs",
@@ -50,12 +67,27 @@ jest.mock(
   { virtual: true }
 );
 // lightning/modal has no Jest stub; the forms are exercised in the org.
-jest.mock("c/mediaItemForm", () => ({ default: { open: jest.fn() } }), {
-  virtual: true
-});
-jest.mock("c/mediaCollectionForm", () => ({ default: { open: jest.fn() } }), {
-  virtual: true
-});
+jest.mock(
+  "c/mediaItemForm",
+  () => ({ __esModule: true, default: { open: jest.fn() } }),
+  {
+    virtual: true
+  }
+);
+jest.mock(
+  "c/mediaCollectionForm",
+  () => ({ __esModule: true, default: { open: jest.fn() } }),
+  {
+    virtual: true
+  }
+);
+jest.mock(
+  "c/mediaItemDetailModal",
+  () => ({ __esModule: true, default: { open: jest.fn() } }),
+  {
+    virtual: true
+  }
+);
 
 const COLLECTIONS = [
   {
@@ -304,6 +336,40 @@ describe("c-media-tracker", () => {
     expect(getMediaItems.mock.calls.at(-1)[0].filter.collectionIds).toEqual([
       "c01"
     ]);
+  });
+
+  it("opens the details window and continues to edit or the record page", async () => {
+    const element = render();
+    await flush();
+    const card = element.shadowRoot.querySelector("c-media-card");
+
+    MediaItemDetailModal.open.mockResolvedValueOnce("edit");
+    MediaItemForm.open.mockResolvedValueOnce(undefined);
+    card.dispatchEvent(new CustomEvent("open", { detail: { id: "a01" } }));
+    await flush();
+
+    expect(MediaItemDetailModal.open).toHaveBeenCalledWith(
+      expect.objectContaining({
+        item: ITEMS[0],
+        typeConfig: TYPE_CONFIGS[1],
+        label: "Frieren"
+      })
+    );
+    expect(MediaItemForm.open).toHaveBeenCalledWith(
+      expect.objectContaining({ item: ITEMS[0] })
+    );
+
+    MediaItemDetailModal.open.mockResolvedValueOnce("record");
+    card.dispatchEvent(new CustomEvent("open", { detail: { id: "a01" } }));
+    await flush();
+    expect(mockNavigate).toHaveBeenCalledWith({
+      type: "standard__recordPage",
+      attributes: {
+        recordId: "a01",
+        objectApiName: "Media_Item__c",
+        actionName: "view"
+      }
+    });
   });
 
   it("shows the server error message", async () => {

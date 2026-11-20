@@ -7,8 +7,13 @@
   gap: 0.75rem;
 }
 
+.items {
+  gap: 1rem;
+}
+
+/* Poster cards: narrower columns suit the tall 2:3 posters. */
 .items_grid {
-  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
 }
 
 .items_list {

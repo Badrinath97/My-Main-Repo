@@ -17,8 +17,9 @@ force-app/main/MediaTracker/
 │                    MediaTrackerController, tests, MediaTestDataFactory
 ├─ triggers/         MediaSeasonTrigger (keeps item progress in sync with its seasons)
 ├─ lwc/              mediaTracker, mediaCard, mediaFilterBar, mediaStats,
-│                    mediaItemForm, mediaCollectionList, mediaCollectionForm,
-│                    mediaTrackerUtils
+│                    mediaItemForm, mediaItemDetail, mediaItemDetailModal,
+│                    mediaCollectionList, mediaCollectionForm,
+│                    mediaTrackerUtils (shared JS), mediaTrackerStyles (shared CSS)
 ├─ objects/          Media_Item__c, Media_Season__c, Media_Collection__c,
 │                    Media_Type_Config__mdt
 │                    (fields, validation rules, list view)
@@ -44,8 +45,10 @@ mediaTracker  (container)   ───►  MediaTrackerController   thin @AuraEna
  ├─ mediaCard  (× n)              MediaItemService         business rules, DML
  ├─ mediaCollectionList           MediaSeasonService
  ├─ mediaItemForm (modal)         MediaCollectionService
+ ├─ mediaItemDetailModal                │
+ │   └─ mediaItemDetail                 │
  └─ mediaCollectionForm (modal)         │
-mediaTrackerUtils (shared)              ▼
+mediaTrackerUtils / Styles (shared)     ▼
                                   MediaItemSelector        all SOQL (USER_MODE)
                                   MediaSeasonSelector
                                   MediaCollectionSelector
@@ -121,6 +124,12 @@ sf org assign permset --name Media_Tracker_User --target-org <alias>
 ```
 
 Then open Lightning App Builder and drag **Media Tracker** onto an App, Home or Record page.
+
+### Viewing an item
+
+Click a card's poster or title (or press Enter on a focused poster, or choose **View details** in the card menu) to open the details window on the same page. It shows the poster, status, star rating, overall progress, key facts, a season table with per-season progress and airing dates, the related movies and notes. From there, **Edit** opens the form and **Open record page** goes to the standard record. Fields hidden for a type in the form are hidden in the details window too.
+
+Dates are formatted in the user's Salesforce locale (e.g. `Oct 3, 2002` for en_US, `3 Oct 2002` for en_IN).
 
 ### Component properties
 

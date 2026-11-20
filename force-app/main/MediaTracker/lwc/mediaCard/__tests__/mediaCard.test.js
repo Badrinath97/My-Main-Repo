@@ -54,7 +54,11 @@ describe("c-media-card", () => {
     expect(root.querySelector(".title").textContent).toBe("Frieren");
     expect(root.querySelector("p").textContent).toBe("2023 · Crunchyroll");
     expect(root.querySelector(".rating").textContent).toContain("9.5/10");
-    expect(root.querySelector("lightning-progress-bar").value).toBe(36);
+    expect(root.querySelector(".fill").style.width).toBe("36%");
+    expect(root.querySelector(".fill").className).toContain("fill_progress");
+    expect(root.querySelector(".overlay .pill").className).toContain(
+      "pill_progress"
+    );
     expect(root.querySelector(".progress-row span").textContent).toBe(
       "10 / 28 Episodes"
     );
@@ -62,9 +66,7 @@ describe("c-media-card", () => {
 
   it("hides progress controls for types that do not track progress", () => {
     const element = render(buildItem({ mediaType: "Movie" }), MOVIE_CONFIG);
-    expect(
-      element.shadowRoot.querySelector("lightning-progress-bar")
-    ).toBeNull();
+    expect(element.shadowRoot.querySelector(".track")).toBeNull();
   });
 
   it("disables +1 when progress reached the total", () => {
@@ -108,6 +110,54 @@ describe("c-media-card", () => {
     });
     expect(handlers.edit).toHaveBeenCalledTimes(1);
     expect(handlers.delete).toHaveBeenCalledTimes(1);
+  });
+
+  it("opens details from the poster, the title, the keyboard and the menu", () => {
+    const element = render(buildItem(), ANIME_CONFIG);
+    const handler = jest.fn();
+    element.addEventListener("open", handler);
+    const root = element.shadowRoot;
+
+    root.querySelector(".media").click();
+    root.querySelector("button.title").click();
+    root
+      .querySelector(".media")
+      .dispatchEvent(new KeyboardEvent("keydown", { key: "Enter" }));
+    root
+      .querySelector(".media")
+      .dispatchEvent(new KeyboardEvent("keydown", { key: "a" }));
+    root
+      .querySelector("lightning-button-menu")
+      .dispatchEvent(new CustomEvent("select", { detail: { value: "open" } }));
+
+    expect(handler).toHaveBeenCalledTimes(4);
+    expect(handler.mock.calls[0][0].detail).toEqual({ id: "a00000000000001" });
+  });
+
+  it("moves status and rating into the body in the list view", () => {
+    const element = createElement("c-media-card", { is: MediaCard });
+    Object.assign(element, {
+      item: buildItem(),
+      typeConfig: ANIME_CONFIG,
+      variant: "list"
+    });
+    document.body.appendChild(element);
+    const root = element.shadowRoot;
+    expect(root.querySelector(".overlay")).toBeNull();
+    expect(root.querySelector(".badges .pill").textContent).toBe("In Progress");
+    expect(root.querySelector(".badges .rating").textContent).toContain(
+      "9.5/10"
+    );
+  });
+
+  it("gives poster-less items a stable colourful placeholder", () => {
+    const a = render(buildItem(), ANIME_CONFIG);
+    const b = render(buildItem(), ANIME_CONFIG);
+    const classA = a.shadowRoot.querySelector(".poster_placeholder").className;
+    expect(classA).toMatch(/theme_[0-5]/);
+    expect(b.shadowRoot.querySelector(".poster_placeholder").className).toBe(
+      classA
+    );
   });
 
   it("falls back to the type icon when the poster fails to load", async () => {
