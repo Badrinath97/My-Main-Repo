@@ -27,6 +27,9 @@ public class MediaTypeConfigData {
   /** Form fields to hide for this type, e.g. ['releaseYear', 'platform']. */
   @AuraEnabled
   public List<String> hiddenFields { get; set; }
+  /** Optional form fields shown only for this type, e.g. ['airedDate']. */
+  @AuraEnabled
+  public List<String> extraFields { get; set; }
 
   public MediaTypeConfigData(String value, String label) {
     this.value = value;
@@ -36,6 +39,7 @@ public class MediaTypeConfigData {
     this.tracksSeasons = false;
     this.tracksMovies = false;
     this.hiddenFields = new List<String>();
+    this.extraFields = new List<String>();
     this.sortOrder = 999;
   }
 
@@ -53,6 +57,7 @@ public class MediaTypeConfigData {
       this.tracksProgress && config.Tracks_Seasons__c == true;
     this.tracksMovies = config.Tracks_Movies__c == true;
     this.hiddenFields = parseList(config.Hidden_Form_Fields__c);
+    this.extraFields = parseList(config.Extra_Form_Fields__c);
     this.sortOrder = config.Sort_Order__c == null
       ? 999
       : config.Sort_Order__c.intValue();

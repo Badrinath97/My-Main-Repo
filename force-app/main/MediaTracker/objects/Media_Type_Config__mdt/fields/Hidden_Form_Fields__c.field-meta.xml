@@ -3,7 +3,7 @@
     <fullName>Hidden_Form_Fields__c</fullName>
     <label>Hidden Form Fields</label>
     <description
-  >Comma-separated form fields to hide for this type. Keys: releaseYear, platform, genre, rating, startDate, completedDate, language, collection, posterUrl, notes, seasonAiredDate, seasonCompletedDate, movieAiredDate.</description>
+  >Comma-separated form fields to hide for this type. Keys: releaseYear, airedDate, platform, platformUrl, genre, rating, startDate, completedDate, language, collection, posterUrl, notes, seasonAiredDate, seasonCompletedDate, movieAiredDate.</description>
     <fieldManageability>DeveloperControlled</fieldManageability>
     <length>255</length>
     <required>false</required>

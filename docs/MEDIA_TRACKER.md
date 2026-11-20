@@ -69,7 +69,7 @@ mediaTrackerUtils / Styles (shared)     ▼
 
 ## Data model
 
-- **`Media_Item__c`**: private sharing, so each user sees only their own list. Fields: Title, Media Type, Status, Rating (0–10), Genre, Platform, Release Year, Progress Current/Total, Progress % (formula), Start/Completed Date, Favorite, Poster URL, Notes, **Language**, **Collection** (lookup) and **Order in Collection**.
+- **`Media_Item__c`**: private sharing, so each user sees only their own list. Fields: Title, Media Type, Status, Rating (0–10), Genre, Platform, **Platform Link** (web page where the title is available; only `http(s)://` links are accepted), Release Year, Progress Current/Total, Progress % (formula), Start/Completed Date, Favorite, Poster URL, Notes, **Language**, **Collection** (lookup) and **Order in Collection**.
 - **`Media_Season__c`**: one row per season of a TV series or anime, **or per related movie** (Master-Detail to `Media_Item__c`). Fields: Entry Type (Season / Movie), Season Number (0 = specials; for movies, the position in the list), Episodes (blank while still airing), Episodes Watched, Aired Date (season start / movie release), Completed Date (season finished airing; not used for movies). A movie is stored as one episode: watched or not.
 - **`Media_Collection__c`**: a franchise, cinematic universe, film series or phase (private sharing, like items). Fields: Collection Name, Collection Type (Cinematic Universe, Franchise, Series / Sequels, Phase / Saga, Other), Parent Collection (self-lookup, for nesting), Description, Poster URL.
 - **`Media_Type_Config__mdt`**: sets how each type behaves (icon, whether progress is tracked, progress unit such as _Episodes_, _Pages_ or _Hours_, whether the type has **seasons** or **related movies**, which **form fields to hide**, and sort order). Seasons and movies are on for TV Series and Anime.
@@ -127,7 +127,11 @@ Then open Lightning App Builder and drag **Media Tracker** onto an App, Home or 
 
 ### Viewing an item
 
-Click a card's poster or title (or press Enter on a focused poster, or choose **View details** in the card menu) to open the details window on the same page. It shows the poster, status, star rating, overall progress, key facts, a season table with per-season progress and airing dates, the related movies and notes. From there, **Edit** opens the form and **Open record page** goes to the standard record. Fields hidden for a type in the form are hidden in the details window too.
+Click a card's poster or title (or press Enter on a focused poster, or choose **View details** in the card menu) to open the details window on the same page. It shows the poster, status, star rating, overall progress, key facts, a season table with per-season progress and airing dates, the related movies and notes. From there, **Edit** opens the form and **Open record page** goes to the standard record. Fields hidden for a type in the form are hidden in the details window too. When an item has a **Platform link**, the platform name is a link that opens that page in a new tab.
+
+Movies show an **Aired date** instead of Started / Completed. It is an opt-in field: a type shows it only when its config lists `airedDate` in **Extra Form Fields** (Movie does; add it to Documentary the same way). When Release year is left blank, Apex fills it from the aired date.
+
+Video games don't track hours (`Tracks_Progress__c = false` on the Video Game config), so the form, cards and details window show no hours.
 
 Dates are formatted in the user's Salesforce locale (e.g. `Oct 3, 2002` for en_US, `3 Oct 2002` for en_IN).
 
@@ -147,7 +151,7 @@ Example: put three instances on one app page, titled "Anime", "Movies" and "Read
 ## Hiding form fields per type (no code)
 
 Set **Hidden Form Fields** on a Media Type Config record to a comma-separated list of keys:
-`releaseYear`, `platform`, `genre`, `rating`, `startDate`, `completedDate`, `language`, `collection`, `posterUrl`, `notes`, `seasonAiredDate`, `seasonCompletedDate`, `movieAiredDate`.
+`releaseYear`, `platform`, `platformUrl`, `genre`, `rating`, `startDate`, `completedDate`, `language`, `collection`, `posterUrl`, `notes`, `seasonAiredDate`, `seasonCompletedDate`, `movieAiredDate`.
 
 Anime ships with `releaseYear,platform,startDate,completedDate,collection`. Hidden fields are only hidden in the form: values that already exist are kept, and Apex still fills in dates automatically (e.g. the completed date when an item is marked Completed).
 

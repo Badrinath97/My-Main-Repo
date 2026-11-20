@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Aired_Date__c</fullName>
+    <label>Aired Date</label>
+    <description
+  >Date the title was released or first aired (e.g. a movie's release date). Shown on the form for types that list airedDate in Extra Form Fields.</description>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Date</type>
+</CustomField>

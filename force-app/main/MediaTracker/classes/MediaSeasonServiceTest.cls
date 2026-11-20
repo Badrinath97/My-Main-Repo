@@ -430,7 +430,16 @@ private class MediaSeasonServiceTest {
       Assert.isTrue(hidden.contains(field), 'Anime hides ' + field);
     }
     Assert.isFalse(hidden.contains('posterUrl'), 'Anime shows the poster URL');
-    Assert.isTrue(configs.get('Movie').hiddenFields.isEmpty());
+    // Movies swap Started/Completed for an Aired date.
+    Assert.areEqual(
+      new List<String>{ 'startDate', 'completedDate' },
+      configs.get('Movie').hiddenFields
+    );
+    Assert.areEqual(
+      new List<String>{ 'airedDate' },
+      configs.get('Movie').extraFields
+    );
+    Assert.isTrue(configs.get('Anime').extraFields.isEmpty());
     Assert.areEqual(
       new List<String>{ 'a', 'b' },
       MediaTypeConfigData.parseList(' a, ,b,')

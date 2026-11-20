@@ -37,6 +37,7 @@
         <members>Media_Collection__c.Description__c</members>
         <members>Media_Collection__c.Parent_Collection__c</members>
         <members>Media_Collection__c.Poster_URL__c</members>
+        <members>Media_Item__c.Aired_Date__c</members>
         <members>Media_Item__c.Collection_Order__c</members>
         <members>Media_Item__c.Collection__c</members>
         <members>Media_Item__c.Completed_Date__c</members>
@@ -45,6 +46,7 @@
         <members>Media_Item__c.Language__c</members>
         <members>Media_Item__c.Media_Type__c</members>
         <members>Media_Item__c.Notes__c</members>
+        <members>Media_Item__c.Platform_URL__c</members>
         <members>Media_Item__c.Platform__c</members>
         <members>Media_Item__c.Poster_URL__c</members>
         <members>Media_Item__c.Progress_Current__c</members>
@@ -61,6 +63,7 @@
         <members>Media_Season__c.Episodes_Watched__c</members>
         <members>Media_Season__c.Media_Item__c</members>
         <members>Media_Season__c.Season_Number__c</members>
+        <members>Media_Type_Config__mdt.Extra_Form_Fields__c</members>
         <members>Media_Type_Config__mdt.Hidden_Form_Fields__c</members>
         <members>Media_Type_Config__mdt.Icon_Name__c</members>
         <members>Media_Type_Config__mdt.Is_Active__c</members>
@@ -132,6 +135,7 @@
     <types>
         <members>Media_Collection__c.Parent_Not_Self</members>
         <members>Media_Item__c.Collection_Order_Positive</members>
+        <members>Media_Item__c.Platform_URL_Web_Link</members>
         <members>Media_Item__c.Progress_Within_Total</members>
         <members>Media_Item__c.Rating_Range</members>
         <members>Media_Season__c.Completed_After_Aired</members>

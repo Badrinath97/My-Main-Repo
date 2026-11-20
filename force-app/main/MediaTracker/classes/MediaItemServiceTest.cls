@@ -92,6 +92,57 @@ private class MediaItemServiceTest {
   }
 
   @IsTest
+  static void airedDateIsSavedAndFillsReleaseYear() {
+    System.runAs(MediaTestDataFactory.getTrackerUser()) {
+      MediaItemData input = new MediaItemData();
+      input.title = 'Thor';
+      input.mediaType = 'Movie';
+      input.airedDate = Date.newInstance(2011, 5, 6);
+
+      MediaItemData saved = MediaItemService.saveMediaItem(input);
+      Assert.areEqual(Date.newInstance(2011, 5, 6), saved.airedDate);
+      Assert.areEqual(
+        2011,
+        saved.releaseYear,
+        'Year comes from the aired date'
+      );
+
+      saved.releaseYear = 2010;
+      saved = MediaItemService.saveMediaItem(saved);
+      Assert.areEqual(2010, saved.releaseYear, 'An entered year is kept');
+    }
+  }
+
+  @IsTest
+  static void savesPlatformLinkAndRejectsNonWebLinks() {
+    System.runAs(MediaTestDataFactory.getTrackerUser()) {
+      MediaItemData input = new MediaItemData();
+      input.title = 'Ninja Storm Connections';
+      input.mediaType = 'Video Game';
+      input.platform = 'FitGirl';
+      input.platformUrl = '  https://example.com/naruto-storm  ';
+
+      MediaItemData saved = MediaItemService.saveMediaItem(input);
+      Assert.areEqual(
+        'https://example.com/naruto-storm',
+        MediaItemService.getMediaItem(saved.id).platformUrl,
+        'The link is saved trimmed'
+      );
+
+      saved.platformUrl = 'javascript:alert(1)';
+      try {
+        MediaItemService.saveMediaItem(saved);
+        Assert.fail('A non-web link must be rejected');
+      } catch (Exception e) {
+        Assert.isTrue(
+          e.getMessage().contains('https://'),
+          'Explains the expected format: ' + e.getMessage()
+        );
+      }
+    }
+  }
+
+  @IsTest
   static void reopeningClearsCompletedDate() {
     System.runAs(MediaTestDataFactory.getTrackerUser()) {
       MediaItemData item = MediaItemService.getMediaItem(idOf('Inception'));

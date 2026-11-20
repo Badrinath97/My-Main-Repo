@@ -318,7 +318,33 @@
           ></lightning-input>
         </div>
       </template>
+      <template lwc:if={showPlatformUrl}>
+        <div class="slds-col slds-size_1-of-1">
+          <lightning-input
+            data-field="platformUrl"
+            type="url"
+            label="Platform link"
+            placeholder="https://... (store, download or streaming page)"
+            field-level-help="Shown as a link on the platform name in the details window."
+            max-length="255"
+            value={draft.platformUrl}
+            onchange={handleChange}
+          ></lightning-input>
+        </div>
+      </template>
 
+      <template lwc:if={visible.airedDate}>
+        <div class="slds-col slds-size_1-of-2">
+          <lightning-input
+            data-field="airedDate"
+            type="date"
+            label="Aired date"
+            field-level-help="Release date. Fills in the release year when that is left blank."
+            value={draft.airedDate}
+            onchange={handleChange}
+          ></lightning-input>
+        </div>
+      </template>
       <template lwc:if={visible.startDate}>
         <div class="slds-col slds-size_1-of-2">
           <lightning-input

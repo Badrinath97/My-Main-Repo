@@ -19,7 +19,9 @@ const NEW_COLLECTION = "__new__";
  */
 const HIDEABLE_FIELDS = [
   "releaseYear",
+  "airedDate",
   "platform",
+  "platformUrl",
   "genre",
   "rating",
   "startDate",
@@ -40,7 +42,10 @@ const INTEGER_FIELDS = [
   "collectionOrder"
 ];
 const DECIMAL_FIELDS = ["rating"];
-const DATE_FIELDS = ["startDate", "completedDate"];
+const DATE_FIELDS = ["startDate", "completedDate", "airedDate"];
+
+/** Opt-in fields: shown only for types listing them in Extra_Form_Fields__c. */
+const EXTRA_FIELDS = ["airedDate"];
 const READ_ONLY_FIELDS = [
   "progressPercent",
   "lastModifiedDate",
@@ -144,11 +149,22 @@ export default class MediaItemForm extends LightningModal {
   /** { releaseYear: true, platform: false, ... } for the selected type. Hidden values are kept, just not shown. */
   get visible() {
     const hidden = new Set(this.currentConfig?.hiddenFields || []);
-    return Object.fromEntries(HIDEABLE_FIELDS.map((f) => [f, !hidden.has(f)]));
+    const extra = new Set(this.currentConfig?.extraFields || []);
+    return Object.fromEntries(
+      HIDEABLE_FIELDS.map((f) => [
+        f,
+        !hidden.has(f) && (!EXTRA_FIELDS.includes(f) || extra.has(f))
+      ])
+    );
   }
 
   get showCompletedDate() {
     return this.isCompleted && this.visible.completedDate;
+  }
+
+  /** The link belongs to the platform, so it is hidden wherever Platform is. */
+  get showPlatformUrl() {
+    return this.visible.platform && this.visible.platformUrl;
   }
 
   get showCollectionOrder() {
@@ -410,6 +426,7 @@ export default class MediaItemForm extends LightningModal {
     DECIMAL_FIELDS.forEach((f) => (payload[f] = toNumber(payload[f], false)));
     DATE_FIELDS.forEach((f) => (payload[f] = payload[f] || null));
     payload.language = payload.language || null;
+    payload.platformUrl = (payload.platformUrl || "").trim() || null;
     // "New collection" picked but then hidden by switching type: create nothing.
     payload.collectionId =
       payload.collectionId === NEW_COLLECTION

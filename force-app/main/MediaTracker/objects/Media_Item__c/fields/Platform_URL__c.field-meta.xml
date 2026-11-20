@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Platform_URL__c</fullName>
+    <label>Platform Link</label>
+    <description
+  >Web page where the title is available on its platform, e.g. the game's store or download page. Shown as a link on the platform name.</description>
+    <inlineHelpText
+  >Full web address starting with https:// (or http://).</inlineHelpText>
+    <required>false</required>
+    <type>Url</type>
+</CustomField>

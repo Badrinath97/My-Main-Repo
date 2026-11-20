@@ -15,6 +15,7 @@ public inherited sharing class MediaTypeConfigSelector {
         Tracks_Seasons__c,
         Tracks_Movies__c,
         Hidden_Form_Fields__c,
+        Extra_Form_Fields__c,
         Icon_Name__c,
         Sort_Order__c,
         Is_Active__c

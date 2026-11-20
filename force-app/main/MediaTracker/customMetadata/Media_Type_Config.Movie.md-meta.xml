@@ -7,6 +7,14 @@
     <label>Movie</label>
     <protected>false</protected>
     <values>
+        <field>Extra_Form_Fields__c</field>
+        <value xsi:type="xsd:string">airedDate</value>
+    </values>
+    <values>
+        <field>Hidden_Form_Fields__c</field>
+        <value xsi:type="xsd:string">startDate,completedDate</value>
+    </values>
+    <values>
         <field>Icon_Name__c</field>
         <value xsi:type="xsd:string">utility:video</value>
     </values>

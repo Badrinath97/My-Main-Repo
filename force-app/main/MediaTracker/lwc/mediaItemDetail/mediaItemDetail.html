@@ -62,7 +62,24 @@
         <template for:each={facts} for:item="fact">
           <div key={fact.key} class="fact">
             <dt>{fact.label}</dt>
-            <dd>{fact.value}</dd>
+            <dd>
+              <template lwc:if={fact.href}>
+                <a
+                  class="fact-link"
+                  href={fact.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title={fact.href}
+                  >{fact.value}
+                  <lightning-icon
+                    icon-name="utility:new_window"
+                    size="xx-small"
+                    class="fact-link-icon"
+                  ></lightning-icon
+                ></a>
+              </template>
+              <template lwc:else>{fact.value}</template>
+            </dd>
           </div>
         </template>
       </dl>

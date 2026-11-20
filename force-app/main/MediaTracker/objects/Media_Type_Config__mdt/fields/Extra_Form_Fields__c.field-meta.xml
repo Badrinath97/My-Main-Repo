@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Extra_Form_Fields__c</fullName>
+    <label>Extra Form Fields</label>
+    <description
+  >Comma-separated optional form fields to show for this type (hidden for other types). Keys: airedDate.</description>
+    <fieldManageability>DeveloperControlled</fieldManageability>
+    <length>255</length>
+    <required>false</required>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

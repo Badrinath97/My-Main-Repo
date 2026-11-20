@@ -78,6 +78,11 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>
+        <field>Media_Item__c.Platform_URL__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
         <field>Media_Item__c.Poster_URL__c</field>
         <readable>true</readable>
     </fieldPermissions>
@@ -104,6 +109,11 @@
     <fieldPermissions>
         <editable>true</editable>
         <field>Media_Item__c.Release_Year__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Media_Item__c.Aired_Date__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>

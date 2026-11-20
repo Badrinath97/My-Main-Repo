@@ -9,6 +9,18 @@ import {
 
 const FALLBACK_ICON = "utility:open_folder";
 
+/** Only real web links become clickable (never javascript: or data: URLs). */
+function safeWebUrl(value) {
+  const url = (value || "").trim();
+  return /^https?:\/\/\S+$/i.test(url) ? url : null;
+}
+
+/** "https://www.fitgirl-repacks.site/x" -> "fitgirl-repacks.site" */
+function hostOf(url) {
+  const match = /^https?:\/\/(?:www\.)?([^/?#:]+)/i.exec(url);
+  return match ? match[1] : url;
+}
+
 /**
  * Read-only details of one media item: poster banner, key facts, overall
  * progress, seasons and related movies. Presentational only; it is shown
@@ -109,15 +121,34 @@ export default class MediaItemDetail extends LightningElement {
       : null;
     return [
       ["releaseYear", "Release year", i.releaseYear],
-      ["platform", "Platform", i.platform],
+      ["platform", "Platform", this.platformText],
       ["language", "Language", i.language],
       ["genre", "Genre", i.genre],
+      ["airedDate", "Aired", formatDate(i.airedDate)],
       ["startDate", "Started", formatDate(i.startDate)],
       ["completedDate", "Completed", formatDate(i.completedDate)],
       ["collection", "Collection", collection]
     ]
       .filter(([field, , value]) => this.isVisible(field) && value)
-      .map(([field, label, value]) => ({ key: field, label, value }));
+      .map(([field, label, value]) => ({
+        key: field,
+        label,
+        value,
+        href: field === "platform" ? this.platformUrl : null
+      }));
+  }
+
+  /** The platform link, when one is set, it is a web link and the type shows it. */
+  get platformUrl() {
+    return this.isVisible("platformUrl")
+      ? safeWebUrl(this.item?.platformUrl)
+      : null;
+  }
+
+  /** Platform name, or the link's site name when only a link was given. */
+  get platformText() {
+    const url = this.platformUrl;
+    return this.item?.platform || (url ? hostOf(url) : null);
   }
 
   get hasFacts() {

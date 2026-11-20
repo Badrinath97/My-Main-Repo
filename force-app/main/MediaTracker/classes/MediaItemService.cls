@@ -153,6 +153,10 @@ public with sharing class MediaItemService {
       rec.Status__c = STATUS_PLANNED;
     }
     applyLifecycleRules(rec, tracksProgress(rec.Media_Type__c));
+    // An aired date implies the release year when none was entered.
+    if (rec.Release_Year__c == null && rec.Aired_Date__c != null) {
+      rec.Release_Year__c = rec.Aired_Date__c.year();
+    }
 
     upsert as user rec;
 

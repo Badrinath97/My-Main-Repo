@@ -165,6 +165,22 @@
   font-weight: 600;
 }
 
+/* Platform link: opens the title's page in a new tab. */
+.fact-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: #4f46e5;
+  text-decoration: none;
+  --slds-c-icon-color-foreground-default: #6366f1;
+}
+
+.fact-link:hover,
+.fact-link:focus-visible {
+  color: #4338ca;
+  text-decoration: underline;
+}
+
 .section {
   margin-top: 1rem;
 }

@@ -20,6 +20,9 @@ public class MediaItemData {
   public String genre { get; set; }
   @AuraEnabled
   public String platform { get; set; }
+  /** Web page where the title is available (store, download or streaming page). */
+  @AuraEnabled
+  public String platformUrl { get; set; }
   @AuraEnabled
   public Integer releaseYear { get; set; }
   @AuraEnabled
@@ -30,6 +33,9 @@ public class MediaItemData {
   public Integer progressPercent { get; set; }
   @AuraEnabled
   public Date startDate { get; set; }
+  /** Release / first-aired date (movies). */
+  @AuraEnabled
+  public Date airedDate { get; set; }
   @AuraEnabled
   public Date completedDate { get; set; }
   @AuraEnabled
@@ -81,10 +87,12 @@ public class MediaItemData {
     this.rating = rec.Rating__c;
     this.genre = rec.Genre__c;
     this.platform = rec.Platform__c;
+    this.platformUrl = rec.Platform_URL__c;
     this.releaseYear = toInteger(rec.Release_Year__c);
     this.progressCurrent = toInteger(rec.Progress_Current__c);
     this.progressTotal = toInteger(rec.Progress_Total__c);
     this.startDate = rec.Start_Date__c;
+    this.airedDate = rec.Aired_Date__c;
     this.completedDate = rec.Completed_Date__c;
     this.isFavorite = rec.Is_Favorite__c == true;
     this.posterUrl = rec.Poster_URL__c;
@@ -120,10 +128,14 @@ public class MediaItemData {
       Rating__c = this.rating,
       Genre__c = this.genre,
       Platform__c = this.platform,
+      Platform_URL__c = String.isBlank(this.platformUrl)
+        ? null
+        : this.platformUrl.trim(),
       Release_Year__c = this.releaseYear,
       Progress_Current__c = this.progressCurrent,
       Progress_Total__c = this.progressTotal,
       Start_Date__c = this.startDate,
+      Aired_Date__c = this.airedDate,
       Completed_Date__c = this.completedDate,
       Is_Favorite__c = this.isFavorite == true,
       Poster_URL__c = this.posterUrl,

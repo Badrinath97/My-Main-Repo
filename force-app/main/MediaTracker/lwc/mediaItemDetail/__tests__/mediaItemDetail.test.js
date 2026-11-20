@@ -175,4 +175,81 @@ describe("c-media-item-detail", () => {
     );
     expect(labels).toEqual(["Release year", "Started", "Completed"]);
   });
+
+  it("links the platform to its page, only for web links", async () => {
+    const GAME = {
+      value: "Video Game",
+      label: "Video Game",
+      tracksProgress: false,
+      hiddenFields: []
+    };
+    const element = createElement("c-media-item-detail", {
+      is: MediaItemDetail
+    });
+    element.item = {
+      id: "g01",
+      title: "Ninja Storm Connections",
+      mediaType: "Video Game",
+      status: "Completed",
+      platform: "FitGirl",
+      platformUrl: "https://example.com/naruto-storm"
+    };
+    element.typeConfig = GAME;
+    document.body.appendChild(element);
+
+    const link = element.shadowRoot.querySelector("a.fact-link");
+    expect(link.getAttribute("href")).toBe("https://example.com/naruto-storm");
+    expect(link.getAttribute("target")).toBe("_blank");
+    expect(link.getAttribute("rel")).toBe("noopener noreferrer");
+    expect(link.textContent.trim()).toBe("FitGirl");
+    // Video games no longer track hours.
+    expect(element.shadowRoot.querySelector(".track")).toBeNull();
+
+    // Unsafe input must never become a link.
+    const scriptUrl = ["javascript", "alert(1)"].join(":");
+    element.item = { ...element.item, platformUrl: scriptUrl };
+    await Promise.resolve();
+    expect(element.shadowRoot.querySelector("a.fact-link")).toBeNull();
+    expect(element.shadowRoot.textContent).toContain("FitGirl");
+
+    element.item = {
+      ...element.item,
+      platform: null,
+      platformUrl: "https://www.example.com/game"
+    };
+    await Promise.resolve();
+    expect(
+      element.shadowRoot.querySelector("a.fact-link").textContent.trim()
+    ).toBe("example.com");
+  });
+
+  it("shows the aired date and hides Started/Completed for movies", () => {
+    const element = createElement("c-media-item-detail", {
+      is: MediaItemDetail
+    });
+    element.item = {
+      id: "m01",
+      title: "Thor",
+      mediaType: "Movie",
+      status: "Completed",
+      airedDate: "2011-05-06",
+      startDate: "2026-11-20",
+      completedDate: "2026-11-20"
+    };
+    element.typeConfig = {
+      value: "Movie",
+      label: "Movie",
+      tracksProgress: false,
+      hiddenFields: ["startDate", "completedDate"],
+      extraFields: ["airedDate"]
+    };
+    document.body.appendChild(element);
+
+    const labels = [...element.shadowRoot.querySelectorAll(".fact dt")].map(
+      (dt) => dt.textContent
+    );
+    expect(labels).toContain("Aired");
+    expect(labels).not.toContain("Started");
+    expect(labels).not.toContain("Completed");
+  });
 });
