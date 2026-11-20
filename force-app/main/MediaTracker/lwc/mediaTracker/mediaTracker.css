@@ -23,3 +23,18 @@
 .empty {
   padding: 2rem 1rem;
 }
+
+/* Infinite scroll: invisible marker after the last card, and a small spinner while the next page loads. */
+.scroll-sentinel {
+  height: 1px;
+}
+
+.more {
+  min-height: 2.5rem;
+}
+
+.more_loading {
+  position: relative;
+  width: 2.5rem;
+  height: 2.5rem;
+}

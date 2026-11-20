@@ -139,7 +139,7 @@ Dates are formatted in the user's Salesforce locale (e.g. `Oct 3, 2002` for en_U
 | Limit to media types  | _(blank = all)_    | Comma-separated values, e.g. `Anime` or `Movie,TV Series`                              |
 | Default view          | `grid`             | `grid`, `list` or `collections`                                                        |
 | Default sort          | `lastModified`     | `title`, `rating`, `releaseYear`, `progress`, `mediaType`, `status`, `collectionOrder` |
-| Items per page        | `12`               | 1–200. A **Load more** button fetches the next page.                                   |
+| Items per page        | `12`               | 1–200. The next page loads automatically as you scroll down (infinite scroll).         |
 | Hide statistics / Add | `false`            | Use these for compact layouts                                                          |
 
 Example: put three instances on one app page, titled "Anime", "Movies" and "Reading", each limited to its own type.

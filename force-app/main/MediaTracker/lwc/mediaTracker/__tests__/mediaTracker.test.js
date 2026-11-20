@@ -246,6 +246,62 @@ describe("c-media-tracker", () => {
     expect(element.shadowRoot.querySelectorAll("c-media-card")).toHaveLength(4);
   });
 
+  it("loads the next page automatically when scrolled to the end", async () => {
+    const observers = [];
+    global.IntersectionObserver = class {
+      constructor(callback) {
+        this.callback = callback;
+        this.targets = new Set();
+        observers.push(this);
+      }
+      observe(target) {
+        this.targets.add(target);
+      }
+      unobserve(target) {
+        this.targets.delete(target);
+      }
+      disconnect() {
+        this.targets.clear();
+      }
+    };
+    try {
+      const element = render();
+      await flush();
+
+      // The scroll marker replaces the button.
+      expect(
+        element.shadowRoot.querySelector(
+          'lightning-button[data-id="load-more"]'
+        )
+      ).toBeNull();
+      const sentinel = element.shadowRoot.querySelector(
+        '[data-id="scroll-sentinel"]'
+      );
+      const observer = observers[0];
+      expect(observer.targets.has(sentinel)).toBe(true);
+
+      getMediaItems.mockResolvedValueOnce({
+        items: ITEMS.map((item) => ({ ...item, id: `${item.id}-p2` })),
+        totalCount: 4,
+        hasMore: false
+      });
+      observer.callback([{ isIntersecting: true, target: sentinel }]);
+      await flush();
+
+      expect(getMediaItems.mock.calls.at(-1)[0].filter.pageOffset).toBe(2);
+      expect(element.shadowRoot.querySelectorAll("c-media-card")).toHaveLength(
+        4
+      );
+      // Everything is loaded, so the marker is gone and nothing is observed.
+      expect(
+        element.shadowRoot.querySelector('[data-id="scroll-sentinel"]')
+      ).toBeNull();
+      expect(observer.targets.size).toBe(0);
+    } finally {
+      delete global.IntersectionObserver;
+    }
+  });
+
   it("updates a card in place after progress changes", async () => {
     incrementProgress.mockResolvedValue({
       ...ITEMS[0],

@@ -77,8 +77,14 @@ export default class MediaTracker extends NavigationMixin(LightningElement) {
   sortOptions = SORT_OPTIONS;
 
   _requestId = 0;
+  /** True while the next page is being appended (spinner at the bottom, not over the cards). */
+  isAppending = false;
+  /** Watches the marker after the last card; null where IntersectionObserver is unavailable. */
+  _scrollObserver = null;
+  _sentinel = null;
 
   connectedCallback() {
+    this.startInfiniteScroll();
     this.view = VIEWS.includes(this.defaultView) ? this.defaultView : "grid";
     this.itemView = this.view === "list" ? "list" : "grid";
     const sortBy = this.defaultSort || "lastModified";
@@ -93,6 +99,60 @@ export default class MediaTracker extends NavigationMixin(LightningElement) {
       sortDirection: defaultDirectionFor(sortBy)
     };
     this.refresh();
+  }
+
+  renderedCallback() {
+    // The marker is re-created whenever the list re-renders with more pages.
+    const sentinel = this.template.querySelector('[data-id="scroll-sentinel"]');
+    if (this._scrollObserver && sentinel !== this._sentinel) {
+      if (this._sentinel) {
+        this._scrollObserver.unobserve(this._sentinel);
+      }
+      this._sentinel = sentinel;
+      if (sentinel) {
+        this._scrollObserver.observe(sentinel);
+      }
+    }
+  }
+
+  disconnectedCallback() {
+    if (this._scrollObserver) {
+      this._scrollObserver.disconnect();
+    }
+    this._sentinel = null;
+  }
+
+  // ---------------------------------------------------- infinite scroll
+
+  startInfiniteScroll() {
+    if (this._scrollObserver || typeof IntersectionObserver !== "function") {
+      return; // no support: the Load more button is shown instead
+    }
+    this._scrollObserver = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          this.loadNextPage();
+        }
+      },
+      { rootMargin: "0px 0px 400px 0px" } // start loading just before the end is reached
+    );
+  }
+
+  loadNextPage() {
+    if (this.hasMore && !this.isLoading && !this.error) {
+      this.loadItems(false);
+    }
+  }
+
+  /**
+   * The observer only fires when the marker enters the screen. On a tall
+   * screen it can still be visible after a page loads, so check again.
+   */
+  recheckSentinel() {
+    if (this._scrollObserver && this._sentinel) {
+      this._scrollObserver.unobserve(this._sentinel);
+      this._scrollObserver.observe(this._sentinel); // reports its current state
+    }
   }
 
   // ------------------------------------------------------------- wires
@@ -238,6 +298,15 @@ export default class MediaTracker extends NavigationMixin(LightningElement) {
     return this.view === "list" ? "items items_list" : "items items_grid";
   }
 
+  /** Full overlay spinner only for a fresh load; appending shows a small one at the bottom. */
+  get showSpinner() {
+    return this.isLoading && !this.isAppending;
+  }
+
+  get showLoadMoreButton() {
+    return !this._scrollObserver;
+  }
+
   get footerText() {
     return `Showing ${this.items.length} of ${this.totalCount}`;
   }
@@ -264,6 +333,8 @@ export default class MediaTracker extends NavigationMixin(LightningElement) {
   async loadItems(reset) {
     const requestId = ++this._requestId; // ignore responses from superseded requests
     this.isLoading = true;
+    this.isAppending = !reset;
+    let loaded = false;
     try {
       const page = await getMediaItems({
         filter: this.buildRequest(reset ? 0 : this.items.length)
@@ -275,6 +346,7 @@ export default class MediaTracker extends NavigationMixin(LightningElement) {
       this.totalCount = page.totalCount;
       this.hasMore = page.hasMore;
       this.error = undefined;
+      loaded = true;
     } catch (e) {
       if (requestId === this._requestId) {
         this.error = reduceErrors(e);
@@ -282,7 +354,12 @@ export default class MediaTracker extends NavigationMixin(LightningElement) {
     } finally {
       if (requestId === this._requestId) {
         this.isLoading = false;
+        this.isAppending = false;
       }
+    }
+    if (loaded && this.hasMore) {
+      // Wait for the new cards to render, then keep filling the screen if needed.
+      Promise.resolve().then(() => this.recheckSentinel());
     }
   }
 
