@@ -21,6 +21,12 @@ public class MediaTypeConfigData {
   /** Items of this type can be split into seasons with per-season episode counts. */
   @AuraEnabled
   public Boolean tracksSeasons { get; set; }
+  /** Items of this type can list related movies (e.g. an anime's films). */
+  @AuraEnabled
+  public Boolean tracksMovies { get; set; }
+  /** Form fields to hide for this type, e.g. ['releaseYear', 'platform']. */
+  @AuraEnabled
+  public List<String> hiddenFields { get; set; }
 
   public MediaTypeConfigData(String value, String label) {
     this.value = value;
@@ -28,6 +34,8 @@ public class MediaTypeConfigData {
     this.iconName = DEFAULT_ICON;
     this.tracksProgress = false;
     this.tracksSeasons = false;
+    this.tracksMovies = false;
+    this.hiddenFields = new List<String>();
     this.sortOrder = 999;
   }
 
@@ -43,9 +51,26 @@ public class MediaTypeConfigData {
     // Seasons only make sense on top of progress tracking.
     this.tracksSeasons =
       this.tracksProgress && config.Tracks_Seasons__c == true;
+    this.tracksMovies = config.Tracks_Movies__c == true;
+    this.hiddenFields = parseList(config.Hidden_Form_Fields__c);
     this.sortOrder = config.Sort_Order__c == null
       ? 999
       : config.Sort_Order__c.intValue();
     return this;
+  }
+
+  /** "releaseYear, platform,," -> ['releaseYear', 'platform'] */
+  @TestVisible
+  private static List<String> parseList(String value) {
+    List<String> result = new List<String>();
+    if (String.isBlank(value)) {
+      return result;
+    }
+    for (String part : value.split(',')) {
+      if (String.isNotBlank(part)) {
+        result.add(part.trim());
+      }
+    }
+    return result;
   }
 }

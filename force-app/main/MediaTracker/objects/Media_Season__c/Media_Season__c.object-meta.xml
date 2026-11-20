@@ -3,7 +3,7 @@
     <label>Media Season</label>
     <pluralLabel>Media Seasons</pluralLabel>
     <description
-  >One season of a TV series, anime or other episodic media item. The parent item's overall progress is calculated from its seasons.</description>
+  >One season of a TV series, anime or other episodic media item, or a movie related to it (Entry Type). The parent item's overall progress is calculated from its seasons; movies are tracked separately.</description>
     <nameField>
         <label>Season Name</label>
         <type>Text</type>

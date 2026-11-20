@@ -1,0 +1,72 @@
+<template>
+  <lightning-modal-header label={label}></lightning-modal-header>
+
+  <lightning-modal-body>
+    <template lwc:if={error}>
+      <div
+        class="slds-notify slds-notify_alert slds-alert_error slds-m-bottom_small"
+        role="alert"
+      >
+        {error}
+      </div>
+    </template>
+
+    <lightning-input
+      data-field="name"
+      label="Collection name"
+      placeholder="Marvel Cinematic Universe"
+      required
+      max-length="80"
+      value={draft.name}
+      onchange={handleChange}
+    ></lightning-input>
+
+    <lightning-combobox
+      data-field="collectionType"
+      label="Type"
+      placeholder="Choose a type"
+      options={typeOptions}
+      value={draft.collectionType}
+      onchange={handleChange}
+    ></lightning-combobox>
+
+    <lightning-combobox
+      data-field="parentId"
+      label="Part of"
+      field-level-help="Optional. Put a phase or saga inside a bigger universe, e.g. Infinity Saga inside Marvel Cinematic Universe."
+      options={parentOptions}
+      value={parentValue}
+      onchange={handleChange}
+    ></lightning-combobox>
+
+    <lightning-textarea
+      data-field="description"
+      label="Description"
+      value={draft.description}
+      onchange={handleChange}
+    ></lightning-textarea>
+
+    <lightning-input
+      data-field="posterUrl"
+      type="url"
+      label="Poster image URL"
+      value={draft.posterUrl}
+      onchange={handleChange}
+    ></lightning-input>
+  </lightning-modal-body>
+
+  <lightning-modal-footer>
+    <lightning-button
+      label="Cancel"
+      onclick={handleCancel}
+      disabled={isSaving}
+    ></lightning-button>
+    <lightning-button
+      class="slds-m-left_x-small"
+      variant="brand"
+      label={saveLabel}
+      onclick={handleSave}
+      disabled={isSaving}
+    ></lightning-button>
+  </lightning-modal-footer>
+</template>

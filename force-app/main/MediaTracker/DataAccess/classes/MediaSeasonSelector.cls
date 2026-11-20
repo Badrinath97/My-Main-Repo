@@ -12,10 +12,13 @@ public inherited sharing class MediaSeasonSelector {
       SELECT
         Id,
         Name,
+        Entry_Type__c,
         Media_Item__c,
         Season_Number__c,
         Episode_Count__c,
-        Episodes_Watched__c
+        Episodes_Watched__c,
+        Aired_Date__c,
+        Completed_Date__c
       FROM Media_Season__c
       WHERE Media_Item__c IN :mediaItemIds
       WITH USER_MODE

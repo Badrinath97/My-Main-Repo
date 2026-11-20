@@ -24,18 +24,25 @@ public inherited sharing class MediaItemSelector {
     'Is_Favorite__c',
     'Poster_URL__c',
     'Notes__c',
+    'Language__c',
+    'Collection__c',
+    'Collection__r.Name',
+    'Collection_Order__c',
     'LastModifiedDate'
   };
 
-  /** Child seasons, ordered, so each item arrives with its seasons in one query. */
+  /** Child seasons and movies, ordered, so each item arrives with them in one query. */
   @TestVisible
-  private static final String SEASON_SUBQUERY = '(SELECT Id, Name, Season_Number__c, Episode_Count__c, Episodes_Watched__c FROM Media_Seasons__r ORDER BY Season_Number__c ASC)';
+  private static final String SEASON_SUBQUERY = '(SELECT Id, Name, Entry_Type__c, Season_Number__c, Episode_Count__c, Episodes_Watched__c, Aired_Date__c, Completed_Date__c FROM Media_Seasons__r ORDER BY Season_Number__c ASC)';
 
   private static String selectClause() {
     return 'SELECT ' + String.join(FIELDS, ', ') + ', ' + SEASON_SUBQUERY;
   }
 
-  /** UI sort key -> SOQL field. Anything not in this map falls back to the default sort. */
+  /**
+   * UI sort key -> SOQL field(s). Anything not in this map falls back to the
+   * default sort. Comma-separated fields all get the chosen direction.
+   */
   @TestVisible
   private static final Map<String, String> SORTABLE_FIELDS = new Map<String, String>{
     'title' => 'Name',
@@ -44,6 +51,8 @@ public inherited sharing class MediaItemSelector {
     'progress' => 'Progress_Percent__c',
     'mediaType' => 'Media_Type__c',
     'status' => 'Status__c',
+    // Groups items by collection, then in collection order (release year breaks ties).
+    'collectionOrder' => 'Collection__r.Name,Collection_Order__c,Release_Year__c',
     'lastModified' => 'LastModifiedDate'
   };
 
@@ -153,6 +162,20 @@ public inherited sharing class MediaItemSelector {
     return results.isEmpty() ? null : (Decimal) results[0].get('avgRating');
   }
 
+  /**
+   * Item counts per collection and status, for the running user's items.
+   * Aliases: coll, st, cnt.
+   */
+  public List<AggregateResult> selectCountsByCollectionAndStatus() {
+    return [
+      SELECT Collection__c coll, Status__c st, COUNT(Id) cnt
+      FROM Media_Item__c
+      WHERE OwnerId = :UserInfo.getUserId() AND Collection__c != NULL
+      WITH USER_MODE
+      GROUP BY Collection__c, Status__c
+    ];
+  }
+
   @TestVisible
   private static String buildWhereClause(
     MediaFilterData filter,
@@ -169,12 +192,20 @@ public inherited sharing class MediaItemSelector {
       conditions.add('Status__c IN :statuses');
       binds.put('statuses', filter.statuses);
     }
+    if (!filter.languages.isEmpty()) {
+      conditions.add('Language__c IN :languages');
+      binds.put('languages', filter.languages);
+    }
+    if (!filter.collectionIds.isEmpty()) {
+      conditions.add('Collection__c IN :collectionIds');
+      binds.put('collectionIds', filter.collectionIds);
+    }
     if (filter.favoritesOnly) {
       conditions.add('Is_Favorite__c = true');
     }
     if (String.isNotBlank(filter.searchTerm)) {
       conditions.add(
-        '(Name LIKE :searchLike OR Genre__c LIKE :searchLike OR Platform__c LIKE :searchLike)'
+        '(Name LIKE :searchLike OR Genre__c LIKE :searchLike OR Platform__c LIKE :searchLike OR Collection__r.Name LIKE :searchLike)'
       );
       binds.put('searchLike', '%' + filter.searchTerm + '%');
     }
@@ -183,10 +214,14 @@ public inherited sharing class MediaItemSelector {
 
   @TestVisible
   private static String buildOrderBy(MediaFilterData filter) {
-    String field = SORTABLE_FIELDS.get(filter.sortBy) ??
+    String fields = SORTABLE_FIELDS.get(filter.sortBy) ??
       SORTABLE_FIELDS.get(MediaFilterData.DEFAULT_SORT);
     String direction = filter.sortDirection == 'ASC' ? 'ASC' : 'DESC';
+    List<String> parts = new List<String>();
+    for (String field : fields.split(',')) {
+      parts.add(field + ' ' + direction + ' NULLS LAST');
+    }
     // Id as tie-breaker keeps OFFSET paging stable.
-    return ' ORDER BY ' + field + ' ' + direction + ' NULLS LAST, Id ASC';
+    return ' ORDER BY ' + String.join(parts, ', ') + ', Id ASC';
   }
 }

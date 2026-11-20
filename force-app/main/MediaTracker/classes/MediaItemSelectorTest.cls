@@ -57,6 +57,47 @@ private class MediaItemSelectorTest {
   }
 
   @IsTest
+  static void filtersByLanguageAndCollection() {
+    Id fakeCollectionId =
+      Media_Collection__c.SObjectType.getDescribe().getKeyPrefix() +
+      '000000000001';
+    MediaFilterData filter = new MediaFilterData();
+    filter.languages = new List<String>{ ' Hindi ', '' };
+    filter.collectionIds = new List<Id>{
+      fakeCollectionId,
+      null,
+      fakeCollectionId
+    };
+    filter.normalize();
+    Map<String, Object> binds = new Map<String, Object>();
+
+    String whereClause = MediaItemSelector.buildWhereClause(filter, binds);
+
+    Assert.isTrue(whereClause.contains('Language__c IN :languages'));
+    Assert.isTrue(whereClause.contains('Collection__c IN :collectionIds'));
+    Assert.areEqual(new List<String>{ 'Hindi' }, binds.get('languages'));
+    Assert.areEqual(
+      new List<Id>{ fakeCollectionId },
+      binds.get('collectionIds'),
+      'Blank and duplicate ids are dropped'
+    );
+    Assert.isTrue(filter.includeSubCollections, 'Defaults to true');
+  }
+
+  @IsTest
+  static void collectionOrderSortsByEveryField() {
+    MediaFilterData filter = new MediaFilterData();
+    filter.sortBy = 'collectionOrder';
+    filter.sortDirection = 'ASC';
+    filter.normalize();
+
+    Assert.areEqual(
+      ' ORDER BY Collection__r.Name ASC NULLS LAST, Collection_Order__c ASC NULLS LAST, Release_Year__c ASC NULLS LAST, Id ASC',
+      MediaItemSelector.buildOrderBy(filter)
+    );
+  }
+
+  @IsTest
   static void selectsOnlyOwnRecords() {
     User owner = MediaTestDataFactory.createTrackerUser('MediaOwner');
     User otherUser = MediaTestDataFactory.createTrackerUser('MediaOther');

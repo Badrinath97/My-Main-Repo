@@ -33,11 +33,18 @@ private class MediaSeasonServiceTest {
   @IsTest
   static void overallProgressIsCalculatedFromSeasons() {
     System.runAs(MediaTestDataFactory.getTrackerUser()) {
+      MediaSeasonData named = season(2, 8, 3);
+      named.name = '  Shippuden ';
       MediaItemData saved = saveSeries(
         'Planned',
-        new List<MediaSeasonData>{ season(1, 10, 10), season(2, 8, 3) }
+        new List<MediaSeasonData>{ season(1, 10, 10), named }
       );
 
+      Assert.areEqual(
+        'Shippuden',
+        saved.seasons[1].name,
+        'Optional season name is kept'
+      );
       Assert.areEqual(13, saved.progressCurrent);
       Assert.areEqual(18, saved.progressTotal);
       Assert.areEqual(72, saved.progressPercent);
@@ -232,6 +239,213 @@ private class MediaSeasonServiceTest {
     }
     Assert.isTrue(seriesTracksSeasons);
     Assert.isFalse(movieTracksSeasons);
+  }
+
+  // ------------------------------------------------------------------ movies
+
+  private static MediaSeasonData movie(String title, Boolean watched) {
+    MediaSeasonData data = new MediaSeasonData();
+    data.name = title;
+    data.episodesWatched = watched ? 1 : 0;
+    return data;
+  }
+
+  private static MediaItemData saveAnime(
+    String status,
+    List<MediaSeasonData> seasons,
+    List<MediaSeasonData> movies
+  ) {
+    MediaItemData input = MediaTestDataFactory.buildData(
+      'Demon Slayer',
+      'Anime',
+      status
+    );
+    input.seasons = seasons;
+    input.movies = movies;
+    return MediaItemService.saveMediaItem(input);
+  }
+
+  @IsTest
+  static void moviesAreSavedSeparatelyAndDoNotCountAsEpisodes() {
+    System.runAs(MediaTestDataFactory.getTrackerUser()) {
+      MediaItemData saved = saveAnime(
+        'Planned',
+        new List<MediaSeasonData>{ season(1, 26, 26), season(2, 18, 0) },
+        new List<MediaSeasonData>{
+          movie(' Mugen Train ', true),
+          movie('Infinity Castle', false)
+        }
+      );
+
+      Assert.areEqual(2, saved.seasons.size(), 'Movies are not seasons');
+      Assert.areEqual(2, saved.movies.size());
+      Assert.areEqual('Mugen Train', saved.movies[0].name);
+      Assert.areEqual(1, saved.movies[0].seasonNumber, 'Numbered by position');
+      Assert.areEqual(2, saved.movies[1].seasonNumber);
+      Assert.isTrue(saved.movies[0].isComplete);
+      Assert.isFalse(saved.movies[1].isComplete);
+      Assert.areEqual(MediaSeasonData.TYPE_MOVIE, saved.movies[0].entryType);
+      Assert.areEqual(26, saved.progressCurrent, 'Only episodes count');
+      Assert.areEqual(44, saved.progressTotal);
+
+      // +1 steps through episodes and never touches the movies.
+      MediaItemData stepped = MediaItemService.incrementProgress(saved.id, 1);
+      Assert.areEqual(1, stepped.seasons[1].episodesWatched);
+      Assert.isFalse(stepped.movies[1].isComplete);
+
+      // Sending only seasons leaves the movies alone, and vice versa.
+      stepped.movies = null;
+      MediaItemData seasonsOnly = MediaItemService.saveMediaItem(stepped);
+      Assert.areEqual(2, seasonsOnly.movies.size());
+
+      seasonsOnly.seasons = null;
+      seasonsOnly.movies = new List<MediaSeasonData>{ seasonsOnly.movies[1] };
+      MediaItemData oneMovie = MediaItemService.saveMediaItem(seasonsOnly);
+      Assert.areEqual(1, oneMovie.movies.size());
+      Assert.areEqual('Infinity Castle', oneMovie.movies[0].name);
+      Assert.areEqual(1, oneMovie.movies[0].seasonNumber, 'Renumbered');
+      Assert.areEqual(2, oneMovie.seasons.size());
+    }
+  }
+
+  @IsTest
+  static void completingMarksMoviesWatchedAndItemWithOnlyMoviesKeepsProgress() {
+    System.runAs(MediaTestDataFactory.getTrackerUser()) {
+      MediaItemData completed = saveAnime(
+        'Completed',
+        new List<MediaSeasonData>{ season(1, 12, 0) },
+        new List<MediaSeasonData>{ movie('The Movie', false) }
+      );
+      Assert.isTrue(completed.movies[0].isComplete);
+      Assert.areEqual(12, completed.progressCurrent);
+
+      MediaItemData input = MediaTestDataFactory.buildData(
+        'Your Name Universe',
+        'Anime',
+        'In Progress'
+      );
+      input.progressCurrent = 3;
+      input.progressTotal = 10;
+      input.movies = new List<MediaSeasonData>{ movie('Film', true) };
+      MediaItemData onlyMovies = MediaItemService.saveMediaItem(input);
+      Assert.areEqual(
+        3,
+        onlyMovies.progressCurrent,
+        'Movies do not drive progress'
+      );
+      Assert.areEqual(10, onlyMovies.progressTotal);
+      Assert.isTrue(onlyMovies.seasons.isEmpty());
+    }
+  }
+
+  @IsTest
+  static void invalidMoviesAreRejected() {
+    System.runAs(MediaTestDataFactory.getTrackerUser()) {
+      MediaItemData saved = saveAnime(
+        'Planned',
+        new List<MediaSeasonData>{ season(1, 12, 0) },
+        new List<MediaSeasonData>()
+      );
+      saved.movies = new List<MediaSeasonData>{ movie('  ', false) };
+      try {
+        MediaItemService.saveMediaItem(saved);
+        Assert.fail('Expected an exception');
+      } catch (MediaItemService.MediaServiceException e) {
+        Assert.areEqual('Each movie needs a title.', e.getMessage());
+      }
+
+      // A season's id can't be passed off as a movie.
+      MediaSeasonData impostor = movie('Impostor', false);
+      impostor.id = saved.seasons[0].id;
+      saved.movies = new List<MediaSeasonData>{ impostor };
+      try {
+        MediaItemService.saveMediaItem(saved);
+        Assert.fail('Expected an exception');
+      } catch (MediaItemService.MediaServiceException e) {
+        Assert.isTrue(e.getMessage().contains('does not belong'));
+      }
+    }
+  }
+
+  @IsTest
+  static void seasonsAndMoviesKeepTheirAiringDates() {
+    System.runAs(MediaTestDataFactory.getTrackerUser()) {
+      MediaSeasonData s1 = season(1, 220, 220);
+      s1.airedDate = Date.newInstance(2002, 10, 3);
+      s1.completedDate = Date.newInstance(2007, 2, 8);
+      MediaSeasonData film = movie('Ninja Clash in the Land of Snow', false);
+      film.airedDate = Date.newInstance(2004, 8, 21);
+      film.completedDate = Date.newInstance(2004, 8, 22); // ignored for movies
+
+      MediaItemData saved = saveAnime(
+        'In Progress',
+        new List<MediaSeasonData>{ s1 },
+        new List<MediaSeasonData>{ film }
+      );
+
+      Assert.areEqual(
+        Date.newInstance(2002, 10, 3),
+        saved.seasons[0].airedDate
+      );
+      Assert.areEqual(
+        Date.newInstance(2007, 2, 8),
+        saved.seasons[0].completedDate
+      );
+      Assert.areEqual(Date.newInstance(2004, 8, 21), saved.movies[0].airedDate);
+      Assert.isNull(
+        saved.movies[0].completedDate,
+        'Movies have no completed date'
+      );
+
+      MediaSeasonData backwards = season(2, 10, 0);
+      backwards.airedDate = Date.newInstance(2010, 1, 1);
+      backwards.completedDate = Date.newInstance(2009, 1, 1);
+      saved.seasons.add(backwards);
+      saved.movies = null;
+      try {
+        MediaItemService.saveMediaItem(saved);
+        Assert.fail('Expected the Completed_After_Aired validation rule');
+      } catch (DmlException e) {
+        Assert.isTrue(e.getMessage().contains('before the aired date'));
+      }
+    }
+  }
+
+  @IsTest
+  static void animeHidesFieldsThroughConfig() {
+    Map<String, MediaTypeConfigData> configs = new Map<String, MediaTypeConfigData>();
+    for (MediaTypeConfigData config : MediaItemService.getTypeConfigs()) {
+      configs.put(config.value, config);
+    }
+    List<String> hidden = configs.get('Anime').hiddenFields;
+    for (
+      String field : new List<String>{
+        'releaseYear',
+        'platform',
+        'startDate',
+        'completedDate',
+        'collection'
+      }
+    ) {
+      Assert.isTrue(hidden.contains(field), 'Anime hides ' + field);
+    }
+    Assert.isFalse(hidden.contains('posterUrl'), 'Anime shows the poster URL');
+    Assert.isTrue(configs.get('Movie').hiddenFields.isEmpty());
+    Assert.areEqual(
+      new List<String>{ 'a', 'b' },
+      MediaTypeConfigData.parseList(' a, ,b,')
+    );
+  }
+
+  @IsTest
+  static void typeConfigExposesMovieFlag() {
+    Map<String, Boolean> tracksMovies = new Map<String, Boolean>();
+    for (MediaTypeConfigData config : MediaItemService.getTypeConfigs()) {
+      tracksMovies.put(config.value, config.tracksMovies);
+    }
+    Assert.isTrue(tracksMovies.get('Anime'));
+    Assert.isTrue(tracksMovies.get('TV Series'));
+    Assert.isFalse(tracksMovies.get('Movie'));
   }
 
   private static MediaItemData withSeasons(List<MediaSeasonData> seasons) {

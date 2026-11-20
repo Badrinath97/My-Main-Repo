@@ -7,19 +7,58 @@ const ALL = "__all__";
  * Stateless filter/sort/view toolbar. The parent owns the filter object and
  * passes it back down; this component only emits changes:
  *   filterchange -> detail: partial filter, e.g. { mediaType: 'Anime' }
- *   viewchange   -> detail: { view: 'grid' | 'list' }
+ *   viewchange   -> detail: { view: 'grid' | 'list' | 'collections' }
  */
 export default class MediaFilterBar extends LightningElement {
   @api typeOptions = [];
   @api statusOptions = [];
   @api sortOptions = [];
   @api filter = {};
+  /** [{ label, value }] for Language__c. The filter is hidden when empty. */
+  @api languageOptions = [];
+  /** [{ label, value }] of collections (labelled with their full path). Hidden when empty. */
+  @api collectionOptions = [];
+  /** 'grid' | 'list' | 'collections' */
   @api view = "grid";
 
   emitSearch = debounce((searchTerm) => this.notify({ searchTerm }), 300);
 
   get showTypeFilter() {
     return (this.typeOptions || []).length > 1;
+  }
+
+  get showLanguageFilter() {
+    return (this.languageOptions || []).length > 0;
+  }
+
+  get showCollectionFilter() {
+    return (this.collectionOptions || []).length > 0;
+  }
+
+  get languageComboOptions() {
+    return [
+      { label: "All languages", value: ALL },
+      ...(this.languageOptions || [])
+    ];
+  }
+
+  get collectionComboOptions() {
+    return [
+      { label: "All collections", value: ALL },
+      ...(this.collectionOptions || [])
+    ];
+  }
+
+  get languageValue() {
+    return this.filter?.language || ALL;
+  }
+
+  get collectionValue() {
+    return this.filter?.collectionId || ALL;
+  }
+
+  get collectionsVariant() {
+    return this.view === "collections" ? "brand" : "border";
   }
 
   get typeComboOptions() {
@@ -56,7 +95,7 @@ export default class MediaFilterBar extends LightningElement {
   }
 
   get gridVariant() {
-    return this.view === "list" ? "border" : "brand";
+    return this.view === "grid" || !this.view ? "brand" : "border";
   }
 
   get listVariant() {
@@ -75,6 +114,20 @@ export default class MediaFilterBar extends LightningElement {
     this.notify({ status: fromCombo(event.detail.value) });
   }
 
+  handleLanguage(event) {
+    this.notify({ language: fromCombo(event.detail.value) });
+  }
+
+  handleCollection(event) {
+    const collectionId = fromCombo(event.detail.value);
+    // Picking a collection shows it in order; clearing keeps the current sort.
+    this.notify(
+      collectionId
+        ? { collectionId, sortBy: "collectionOrder", sortDirection: "ASC" }
+        : { collectionId }
+    );
+  }
+
   handleSort(event) {
     const sortBy = event.detail.value;
     this.notify({ sortBy, sortDirection: defaultDirectionFor(sortBy) });
@@ -91,15 +144,19 @@ export default class MediaFilterBar extends LightningElement {
   }
 
   showGrid() {
-    this.dispatchEvent(
-      new CustomEvent("viewchange", { detail: { view: "grid" } })
-    );
+    this.changeView("grid");
   }
 
   showList() {
-    this.dispatchEvent(
-      new CustomEvent("viewchange", { detail: { view: "list" } })
-    );
+    this.changeView("list");
+  }
+
+  showCollections() {
+    this.changeView("collections");
+  }
+
+  changeView(view) {
+    this.dispatchEvent(new CustomEvent("viewchange", { detail: { view } }));
   }
 
   notify(change) {

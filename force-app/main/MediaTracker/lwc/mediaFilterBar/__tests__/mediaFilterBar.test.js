@@ -87,6 +87,58 @@ describe("c-media-filter-bar", () => {
     ).toBeNull();
   });
 
+  it("hides language and collection filters until there are options", () => {
+    const element = render();
+    expect(
+      element.shadowRoot.querySelector('lightning-combobox[data-id="language"]')
+    ).toBeNull();
+    expect(
+      element.shadowRoot.querySelector(
+        'lightning-combobox[data-id="collection"]'
+      )
+    ).toBeNull();
+  });
+
+  it("sorts by collection order when a collection is picked", () => {
+    const element = render({
+      languageOptions: [{ label: "Hindi", value: "Hindi" }],
+      collectionOptions: [{ label: "MCU", value: "c01" }]
+    });
+    const handler = jest.fn();
+    element.addEventListener("filterchange", handler);
+
+    const collectionCombo = element.shadowRoot.querySelector(
+      'lightning-combobox[data-id="collection"]'
+    );
+    collectionCombo.dispatchEvent(
+      new CustomEvent("change", { detail: { value: "c01" } })
+    );
+    collectionCombo.dispatchEvent(
+      new CustomEvent("change", { detail: { value: "__all__" } })
+    );
+    element.shadowRoot
+      .querySelector('lightning-combobox[data-id="language"]')
+      .dispatchEvent(new CustomEvent("change", { detail: { value: "Hindi" } }));
+
+    expect(handler.mock.calls[0][0].detail).toEqual({
+      collectionId: "c01",
+      sortBy: "collectionOrder",
+      sortDirection: "ASC"
+    });
+    expect(handler.mock.calls[1][0].detail).toEqual({ collectionId: "" });
+    expect(handler.mock.calls[2][0].detail).toEqual({ language: "Hindi" });
+  });
+
+  it("switches to the collections view", () => {
+    const element = render();
+    const handler = jest.fn();
+    element.addEventListener("viewchange", handler);
+    element.shadowRoot
+      .querySelector('lightning-button-icon[title="Collections"]')
+      .click();
+    expect(handler.mock.calls[0][0].detail).toEqual({ view: "collections" });
+  });
+
   it("emits viewchange", () => {
     const element = render();
     const handler = jest.fn();

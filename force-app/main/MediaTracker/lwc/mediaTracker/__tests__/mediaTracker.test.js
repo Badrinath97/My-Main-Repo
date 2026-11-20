@@ -4,6 +4,7 @@ import getTypeConfigs from "@salesforce/apex/MediaTrackerController.getTypeConfi
 import getMediaItems from "@salesforce/apex/MediaTrackerController.getMediaItems";
 import getStats from "@salesforce/apex/MediaTrackerController.getStats";
 import incrementProgress from "@salesforce/apex/MediaTrackerController.incrementProgress";
+import getCollections from "@salesforce/apex/MediaTrackerController.getCollections";
 
 jest.mock(
   "@salesforce/apex/MediaTrackerController.getTypeConfigs",
@@ -38,10 +39,43 @@ jest.mock(
   () => ({ default: jest.fn() }),
   { virtual: true }
 );
-// lightning/modal has no Jest stub; the form is exercised in the org.
+jest.mock(
+  "@salesforce/apex/MediaTrackerController.getCollections",
+  () => ({ default: jest.fn() }),
+  { virtual: true }
+);
+jest.mock(
+  "@salesforce/apex/MediaTrackerController.deleteCollection",
+  () => ({ default: jest.fn() }),
+  { virtual: true }
+);
+// lightning/modal has no Jest stub; the forms are exercised in the org.
 jest.mock("c/mediaItemForm", () => ({ default: { open: jest.fn() } }), {
   virtual: true
 });
+jest.mock("c/mediaCollectionForm", () => ({ default: { open: jest.fn() } }), {
+  virtual: true
+});
+
+const COLLECTIONS = [
+  {
+    id: "c01",
+    name: "Marvel Cinematic Universe",
+    path: "Marvel Cinematic Universe",
+    depth: 0,
+    itemCount: 3,
+    completedCount: 1
+  },
+  {
+    id: "c02",
+    name: "Infinity Saga",
+    path: "Marvel Cinematic Universe › Infinity Saga",
+    parentId: "c01",
+    depth: 1,
+    itemCount: 2,
+    completedCount: 1
+  }
+];
 
 const TYPE_CONFIGS = [
   {
@@ -103,6 +137,7 @@ describe("c-media-tracker", () => {
       byStatus: [],
       byType: []
     });
+    getCollections.mockResolvedValue(COLLECTIONS);
   });
 
   afterEach(() => {
@@ -202,6 +237,73 @@ describe("c-media-tracker", () => {
     expect(element.shadowRoot.querySelector("c-media-card").item.status).toBe(
       "Completed"
     );
+  });
+
+  it("passes collections to the filter bar and filters by language and collection", async () => {
+    const element = render();
+    await flush();
+
+    const bar = element.shadowRoot.querySelector("c-media-filter-bar");
+    expect(bar.collectionOptions).toEqual([
+      { label: "Marvel Cinematic Universe", value: "c01" },
+      { label: "Marvel Cinematic Universe › Infinity Saga", value: "c02" }
+    ]);
+
+    bar.dispatchEvent(
+      new CustomEvent("filterchange", {
+        detail: { language: "Hindi", collectionId: "c01" }
+      })
+    );
+    await flush();
+    expect(getMediaItems.mock.calls[1][0].filter).toMatchObject({
+      languages: ["Hindi"],
+      collectionIds: ["c01"],
+      includeSubCollections: true
+    });
+  });
+
+  it("opens a collection from the collections view in collection order", async () => {
+    const element = render();
+    await flush();
+
+    element.shadowRoot
+      .querySelector("c-media-filter-bar")
+      .dispatchEvent(
+        new CustomEvent("viewchange", { detail: { view: "collections" } })
+      );
+    await flush();
+    expect(element.shadowRoot.querySelector("c-media-card")).toBeNull();
+    const list = element.shadowRoot.querySelector("c-media-collection-list");
+    expect(list.collections).toHaveLength(2);
+
+    list.dispatchEvent(new CustomEvent("select", { detail: { id: "c02" } }));
+    await flush();
+
+    expect(
+      element.shadowRoot.querySelector("c-media-collection-list")
+    ).toBeNull();
+    expect(element.shadowRoot.querySelectorAll("c-media-card")).toHaveLength(2);
+    const lastCall = getMediaItems.mock.calls.at(-1)[0].filter;
+    expect(lastCall).toMatchObject({
+      collectionIds: ["c02"],
+      sortBy: "collectionOrder",
+      sortDirection: "ASC"
+    });
+  });
+
+  it("filters by collection when a card's collection chip is clicked", async () => {
+    const element = render();
+    await flush();
+
+    element.shadowRoot.querySelector("c-media-card").dispatchEvent(
+      new CustomEvent("collectionselect", {
+        detail: { id: "a01", collectionId: "c01" }
+      })
+    );
+    await flush();
+    expect(getMediaItems.mock.calls.at(-1)[0].filter.collectionIds).toEqual([
+      "c01"
+    ]);
   });
 
   it("shows the server error message", async () => {

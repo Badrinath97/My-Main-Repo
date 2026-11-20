@@ -1,5 +1,5 @@
 import { LightningElement, api } from "lwc";
-import { statusBadgeClass } from "c/mediaTrackerUtils";
+import { customSeasonName, statusBadgeClass } from "c/mediaTrackerUtils";
 
 const FALLBACK_ICON = "utility:open_folder";
 
@@ -8,6 +8,7 @@ const FALLBACK_ICON = "utility:open_folder";
  * renders the item and raises intent events for the parent to handle:
  *   edit | delete | favorite  -> detail: { id }
  *   progress                  -> detail: { id, step }
+ *   collectionselect          -> detail: { id, collectionId }
  */
 export default class MediaCard extends LightningElement {
   @api item;
@@ -35,8 +36,24 @@ export default class MediaCard extends LightningElement {
   }
 
   get subtitle() {
-    const { releaseYear, platform, genre } = this.item || {};
-    return [releaseYear, platform, genre].filter(Boolean).join(" · ");
+    const { releaseYear, language, platform, genre } = this.item || {};
+    return [releaseYear, language, platform, genre].filter(Boolean).join(" · ");
+  }
+
+  get hasCollection() {
+    return Boolean(this.item?.collectionId && this.item?.collectionName);
+  }
+
+  /** e.g. "Infinity Saga #3" */
+  get collectionLabel() {
+    const order = this.item.collectionOrder;
+    return order !== null && order !== undefined
+      ? `${this.item.collectionName} #${order}`
+      : this.item.collectionName;
+  }
+
+  get collectionTitle() {
+    return `Show everything in ${this.item.collectionName}`;
   }
 
   get statusClass() {
@@ -62,7 +79,7 @@ export default class MediaCard extends LightningElement {
     );
   }
 
-  /** e.g. "Season 2 · 3 / 8 · 3 seasons" */
+  /** e.g. "Season 2 · 3 / 8 · 3 seasons", or "Season 2: Shippuden · 3 / 8 · 3 seasons" */
   get seasonLabel() {
     const seasons = this.item.seasons;
     const current =
@@ -73,7 +90,31 @@ export default class MediaCard extends LightningElement {
         ? `${current.episodesWatched} / ${current.episodeCount}`
         : `${current.episodesWatched} watched`;
     const total = seasons.length > 1 ? ` · ${seasons.length} seasons` : "";
-    return `Season ${current.seasonNumber} · ${episodes}${total}`;
+    const name = customSeasonName(current);
+    const season = name
+      ? `Season ${current.seasonNumber}: ${name}`
+      : `Season ${current.seasonNumber}`;
+    return `${season} · ${episodes}${total}`;
+  }
+
+  get hasMovies() {
+    return (
+      this.typeConfig?.tracksMovies === true &&
+      (this.item?.movies || []).length > 0
+    );
+  }
+
+  /** e.g. "Movies · 1 / 3 watched" */
+  get movieLabel() {
+    const movies = this.item.movies;
+    const watched = movies.filter((m) => m.isComplete).length;
+    return `Movies · ${watched} / ${movies.length} watched`;
+  }
+
+  get movieTitles() {
+    return this.item.movies
+      .map((m) => `${m.isComplete ? "✓" : "○"} ${m.name}`)
+      .join("\n");
   }
 
   get progressValue() {
@@ -107,6 +148,10 @@ export default class MediaCard extends LightningElement {
 
   handleMenuSelect(event) {
     this.fire(event.detail.value); // 'edit' | 'delete'
+  }
+
+  handleCollection() {
+    this.fire("collectionselect", { collectionId: this.item.collectionId });
   }
 
   handleIncrement() {

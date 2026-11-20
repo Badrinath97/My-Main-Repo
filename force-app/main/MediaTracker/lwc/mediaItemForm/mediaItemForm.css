@@ -5,15 +5,56 @@
   margin-bottom: 0.25rem;
 }
 
-.season-row {
-  display: grid;
-  grid-template-columns: 5rem 1fr 1fr auto;
+/* Season and movie rows: one line on wide modals, wrapping on narrow ones. */
+.season-row,
+.movie-row {
+  display: flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
-  align-items: end;
+  align-items: flex-end;
   padding: 0.25rem 0;
   border-bottom: 1px solid var(--slds-g-color-border-base-1, #e5e5e5);
 }
 
+.cell_number {
+  flex: 0 0 4.5rem;
+}
+
+.cell_name {
+  flex: 2 1 9rem;
+  min-width: 0;
+}
+
+.cell_title {
+  flex: 3 1 12rem;
+  min-width: 0;
+}
+
+.cell_count {
+  flex: 1 1 5rem;
+  min-width: 5rem;
+}
+
+.cell_date {
+  flex: 1 1 9rem;
+  min-width: 9rem;
+}
+
 .season-remove {
+  flex: 0 0 auto;
   padding-bottom: 0.125rem;
+}
+
+.movie-watched {
+  flex: 0 0 auto;
+  padding-bottom: 0.375rem;
+}
+
+.new-collection {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem 0.75rem;
+  border-radius: 0.25rem;
+  background: var(--slds-g-color-neutral-base-95, #f3f3f3);
 }

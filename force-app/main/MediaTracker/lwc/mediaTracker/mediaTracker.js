@@ -3,31 +3,44 @@ import { ShowToastEvent } from "lightning/platformShowToastEvent";
 import LightningConfirm from "lightning/confirm";
 import { getObjectInfo, getPicklistValues } from "lightning/uiObjectInfoApi";
 import MEDIA_ITEM_OBJECT from "@salesforce/schema/Media_Item__c";
+import MEDIA_COLLECTION_OBJECT from "@salesforce/schema/Media_Collection__c";
 import STATUS_FIELD from "@salesforce/schema/Media_Item__c.Status__c";
+import LANGUAGE_FIELD from "@salesforce/schema/Media_Item__c.Language__c";
+import COLLECTION_TYPE_FIELD from "@salesforce/schema/Media_Collection__c.Collection_Type__c";
 import getTypeConfigs from "@salesforce/apex/MediaTrackerController.getTypeConfigs";
 import getMediaItems from "@salesforce/apex/MediaTrackerController.getMediaItems";
 import getStats from "@salesforce/apex/MediaTrackerController.getStats";
 import incrementProgress from "@salesforce/apex/MediaTrackerController.incrementProgress";
 import toggleFavorite from "@salesforce/apex/MediaTrackerController.toggleFavorite";
 import deleteMediaItem from "@salesforce/apex/MediaTrackerController.deleteMediaItem";
+import getCollections from "@salesforce/apex/MediaTrackerController.getCollections";
+import deleteCollection from "@salesforce/apex/MediaTrackerController.deleteCollection";
 import MediaItemForm from "c/mediaItemForm";
+import MediaCollectionForm from "c/mediaCollectionForm";
 import {
   SORT_OPTIONS,
+  collectionOptions,
   defaultDirectionFor,
   parseList,
   reduceErrors
 } from "c/mediaTrackerUtils";
 
 const DEFAULT_PAGE_SIZE = 12;
+const VIEWS = ["grid", "list", "collections"];
+
+const toOptions = (data) =>
+  data.values.map(({ label, value }) => ({ label, value }));
 
 /**
  * Media Tracker container.
  *
  * Owns state and server calls; delegates rendering to child components:
- *   c-media-stats      summary tiles
- *   c-media-filter-bar search / filter / sort / view toggle
- *   c-media-card       one item
- *   c-media-item-form  create / edit modal
+ *   c-media-stats           summary tiles
+ *   c-media-filter-bar      search / filter / sort / view toggle
+ *   c-media-card            one item
+ *   c-media-collection-list collections (franchises, universes) as a tree
+ *   c-media-item-form       create / edit item modal
+ *   c-media-collection-form create / edit collection modal
  *
  * Drop several instances on different pages with different settings,
  * e.g. an "Anime" tab restricted via mediaTypes="Anime".
@@ -36,7 +49,7 @@ export default class MediaTracker extends LightningElement {
   @api cardTitle = "My Media Tracker";
   /** Comma-separated Media_Type__c values this instance is limited to. Blank = all. */
   @api mediaTypes = "";
-  /** 'grid' | 'list' */
+  /** 'grid' | 'list' | 'collections' */
   @api defaultView = "grid";
   @api defaultSort = "lastModified";
   @api pageSize = DEFAULT_PAGE_SIZE;
@@ -51,19 +64,27 @@ export default class MediaTracker extends LightningElement {
   stats;
   typeConfigs = [];
   statusOptions = [];
+  languageOptions = [];
+  collectionTypeOptions = [];
+  collections = [];
   view = "grid";
+  /** Last items view (grid/list), restored after picking a collection. */
+  itemView = "grid";
   filter = {};
   sortOptions = SORT_OPTIONS;
 
   _requestId = 0;
 
   connectedCallback() {
-    this.view = this.defaultView === "list" ? "list" : "grid";
+    this.view = VIEWS.includes(this.defaultView) ? this.defaultView : "grid";
+    this.itemView = this.view === "list" ? "list" : "grid";
     const sortBy = this.defaultSort || "lastModified";
     this.filter = {
       searchTerm: "",
       mediaType: "",
       status: "",
+      language: "",
+      collectionId: "",
       favoritesOnly: false,
       sortBy,
       sortDirection: defaultDirectionFor(sortBy)
@@ -85,26 +106,47 @@ export default class MediaTracker extends LightningElement {
   @wire(getObjectInfo, { objectApiName: MEDIA_ITEM_OBJECT })
   objectInfo;
 
+  @wire(getObjectInfo, { objectApiName: MEDIA_COLLECTION_OBJECT })
+  collectionObjectInfo;
+
   @wire(getPicklistValues, {
     recordTypeId: "$objectInfo.data.defaultRecordTypeId",
     fieldApiName: STATUS_FIELD
   })
   wiredStatuses({ data }) {
     if (data) {
-      this.statusOptions = data.values.map(({ label, value }) => ({
-        label,
-        value
-      }));
+      this.statusOptions = toOptions(data);
+    }
+  }
+
+  @wire(getPicklistValues, {
+    recordTypeId: "$objectInfo.data.defaultRecordTypeId",
+    fieldApiName: LANGUAGE_FIELD
+  })
+  wiredLanguages({ data }) {
+    if (data) {
+      this.languageOptions = toOptions(data);
+    }
+  }
+
+  @wire(getPicklistValues, {
+    recordTypeId: "$collectionObjectInfo.data.defaultRecordTypeId",
+    fieldApiName: COLLECTION_TYPE_FIELD
+  })
+  wiredCollectionTypes({ data }) {
+    if (data) {
+      this.collectionTypeOptions = toOptions(data);
     }
   }
 
   // ---------------------------------------------------------- public API
 
-  /** Reloads items and stats. Callable by a parent component. */
+  /** Reloads items, stats and collections. Callable by a parent component. */
   @api
   refresh() {
     this.loadItems(true);
     this.loadStats();
+    this.loadCollections();
   }
 
   // ------------------------------------------------------------ getters
@@ -127,6 +169,10 @@ export default class MediaTracker extends LightningElement {
     }));
   }
 
+  get collectionFilterOptions() {
+    return collectionOptions(this.collections);
+  }
+
   get cards() {
     const configByType = Object.fromEntries(
       this.typeConfigs.map((c) => [c.value, c])
@@ -136,6 +182,15 @@ export default class MediaTracker extends LightningElement {
       item,
       config: configByType[item.mediaType]
     }));
+  }
+
+  get isCollectionsView() {
+    return this.view === "collections";
+  }
+
+  /** The cards use grid/list; the collections view has its own layout. */
+  get cardVariant() {
+    return this.view === "list" ? "list" : "grid";
   }
 
   get showStats() {
@@ -150,13 +205,24 @@ export default class MediaTracker extends LightningElement {
     return this.items.length > 0;
   }
 
+  get showFooter() {
+    return this.hasItems && !this.isCollectionsView;
+  }
+
   get showEmptyState() {
     return !this.isLoading && !this.error && this.items.length === 0;
   }
 
   get hasActiveFilters() {
     const f = this.filter;
-    return Boolean(f.searchTerm || f.mediaType || f.status || f.favoritesOnly);
+    return Boolean(
+      f.searchTerm ||
+      f.mediaType ||
+      f.status ||
+      f.language ||
+      f.collectionId ||
+      f.favoritesOnly
+    );
   }
 
   get emptyMessage() {
@@ -181,6 +247,9 @@ export default class MediaTracker extends LightningElement {
       searchTerm: f.searchTerm,
       mediaTypes: f.mediaType ? [f.mediaType] : this.allowedTypes,
       statuses: f.status ? [f.status] : [],
+      languages: f.language ? [f.language] : [],
+      collectionIds: f.collectionId ? [f.collectionId] : [],
+      includeSubCollections: true,
       favoritesOnly: f.favoritesOnly,
       sortBy: f.sortBy,
       sortDirection: f.sortDirection,
@@ -225,6 +294,14 @@ export default class MediaTracker extends LightningElement {
     }
   }
 
+  async loadCollections() {
+    try {
+      this.collections = (await getCollections()) || [];
+    } catch {
+      this.collections = []; // collections are optional; keep the list usable
+    }
+  }
+
   replaceItem(updated) {
     this.items = this.items.map((i) => (i.id === updated.id ? updated : i));
   }
@@ -243,6 +320,9 @@ export default class MediaTracker extends LightningElement {
 
   handleViewChange(event) {
     this.view = event.detail.view;
+    if (this.view !== "collections") {
+      this.itemView = this.view;
+    }
   }
 
   handleLoadMore() {
@@ -265,11 +345,18 @@ export default class MediaTracker extends LightningElement {
       typeConfigs: this.availableTypeConfigs,
       statusOptions: this.statusOptions,
       defaultMediaType:
-        this.filter.mediaType || this.availableTypeConfigs[0]?.value
+        this.filter.mediaType || this.availableTypeConfigs[0]?.value,
+      languageOptions: this.languageOptions,
+      collections: this.collections,
+      collectionTypeOptions: this.collectionTypeOptions,
+      defaultCollectionId: this.filter.collectionId || null
     });
     if (saved) {
       this.toast("Saved", `"${saved.title}" was saved.`, "success");
       this.refresh();
+    } else {
+      // The form may have created a collection before a failed/cancelled save.
+      this.loadCollections();
     }
   }
 
@@ -281,6 +368,7 @@ export default class MediaTracker extends LightningElement {
       this.replaceItem(updated);
       if (updated.status === "Completed" && before?.status !== "Completed") {
         this.toast("Completed!", `You finished "${updated.title}".`, "success");
+        this.loadCollections(); // completion counts changed
       }
       this.loadStats();
     } catch (e) {
@@ -316,6 +404,72 @@ export default class MediaTracker extends LightningElement {
       this.totalCount = Math.max(0, this.totalCount - 1);
       this.toast("Deleted", `"${item?.title}" was removed.`, "success");
       this.loadStats();
+      this.loadCollections();
+    } catch (e) {
+      this.toast("Could not delete", reduceErrors(e), "error");
+    }
+  }
+
+  // -------------------------------------------------------- collections
+
+  /** Shows a collection's titles in collection order (from a card chip or the collections view). */
+  handleCollectionSelect(event) {
+    const collectionId = event.detail.collectionId || event.detail.id;
+    this.filter = {
+      ...this.filter,
+      collectionId,
+      sortBy: "collectionOrder",
+      sortDirection: "ASC"
+    };
+    this.view = this.itemView;
+    this.loadItems(true);
+  }
+
+  handleNewCollection() {
+    this.openCollectionForm();
+  }
+
+  handleEditCollection(event) {
+    this.openCollectionForm(
+      this.collections.find((c) => c.id === event.detail.id)
+    );
+  }
+
+  async openCollectionForm(collection) {
+    const saved = await MediaCollectionForm.open({
+      size: "small",
+      label: collection ? `Edit "${collection.name}"` : "New collection",
+      collection,
+      collections: this.collections,
+      typeOptions: this.collectionTypeOptions
+    });
+    if (saved) {
+      this.toast("Saved", `"${saved.name}" was saved.`, "success");
+      this.loadCollections();
+      if (collection) {
+        this.loadItems(true); // renamed collections show on the cards
+      }
+    }
+  }
+
+  async handleDeleteCollection(event) {
+    const collection = this.collections.find((c) => c.id === event.detail.id);
+    const confirmed = await LightningConfirm.open({
+      label: "Delete collection",
+      message: `Delete "${collection?.name}"? Its titles stay in your list, and any sub-collections move to the top level.`,
+      theme: "warning"
+    });
+    if (!confirmed) {
+      return;
+    }
+    try {
+      await deleteCollection({ recordId: event.detail.id });
+      this.toast("Deleted", `"${collection?.name}" was deleted.`, "success");
+      if (this.filter.collectionId === event.detail.id) {
+        this.filter = { ...this.filter, collectionId: "" };
+      }
+      this.loadCollections();
+      this.loadItems(true);
     } catch (e) {
       this.toast("Could not delete", reduceErrors(e), "error");
     }

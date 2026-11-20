@@ -32,6 +32,30 @@
       onchange={handleStatus}
     ></lightning-combobox>
 
+    <template lwc:if={showLanguageFilter}>
+      <lightning-combobox
+        class="combo"
+        label="Language"
+        data-id="language"
+        variant="label-hidden"
+        options={languageComboOptions}
+        value={languageValue}
+        onchange={handleLanguage}
+      ></lightning-combobox>
+    </template>
+
+    <template lwc:if={showCollectionFilter}>
+      <lightning-combobox
+        class="combo combo_wide"
+        label="Collection"
+        data-id="collection"
+        variant="label-hidden"
+        options={collectionComboOptions}
+        value={collectionValue}
+        onchange={handleCollection}
+      ></lightning-combobox>
+    </template>
+
     <div class="sort">
       <lightning-combobox
         class="combo"
@@ -73,6 +97,13 @@
           alternative-text="List view"
           title="List view"
           onclick={showList}
+        ></lightning-button-icon>
+        <lightning-button-icon
+          icon-name="utility:layers"
+          variant={collectionsVariant}
+          alternative-text="Collections"
+          title="Collections"
+          onclick={showCollections}
         ></lightning-button-icon>
       </lightning-button-group>
     </div>

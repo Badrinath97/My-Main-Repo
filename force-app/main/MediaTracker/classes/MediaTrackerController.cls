@@ -67,6 +67,38 @@ public with sharing class MediaTrackerController {
     }
   }
 
+  // ------------------------------------------------------------ collections
+
+  /** Not cacheable: collections change from this same component. */
+  @AuraEnabled
+  public static List<MediaCollectionData> getCollections() {
+    try {
+      return MediaCollectionService.getCollections();
+    } catch (Exception e) {
+      throw toAuraException(e);
+    }
+  }
+
+  @AuraEnabled
+  public static MediaCollectionData saveCollection(
+    MediaCollectionData collection
+  ) {
+    try {
+      return MediaCollectionService.saveCollection(collection);
+    } catch (Exception e) {
+      throw toAuraException(e);
+    }
+  }
+
+  @AuraEnabled
+  public static void deleteCollection(Id recordId) {
+    try {
+      MediaCollectionService.deleteCollection(recordId);
+    } catch (Exception e) {
+      throw toAuraException(e);
+    }
+  }
+
   @TestVisible
   private static AuraHandledException toAuraException(Exception e) {
     String message = e instanceof DmlException

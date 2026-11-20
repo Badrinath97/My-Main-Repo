@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Aired_Date__c</fullName>
+    <label>Aired Date</label>
+    <description
+  >Season: date it started airing. Movie: release date.</description>
+    <required>false</required>
+    <type>Date</type>
+</CustomField>

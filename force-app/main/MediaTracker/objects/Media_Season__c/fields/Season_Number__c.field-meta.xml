@@ -2,7 +2,8 @@
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Season_Number__c</fullName>
     <label>Season Number</label>
-    <description>Use 0 for specials.</description>
+    <description
+  >Seasons: the season number (0 for specials). Movies: the movie&apos;s position in the list.</description>
     <precision>3</precision>
     <scale>0</scale>
     <required>true</required>

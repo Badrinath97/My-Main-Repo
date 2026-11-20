@@ -3,7 +3,7 @@
     <fullName>Media_Item__c</fullName>
     <label>Media Item</label>
     <referenceTo>Media_Item__c</referenceTo>
-    <relationshipLabel>Seasons</relationshipLabel>
+    <relationshipLabel>Seasons &amp; Movies</relationshipLabel>
     <relationshipName>Media_Seasons</relationshipName>
     <relationshipOrder>0</relationshipOrder>
     <reparentableMasterDetail>false</reparentableMasterDetail>

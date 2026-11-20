@@ -31,14 +31,14 @@
         name="defaultView"
         type="String"
         label="Default view"
-        datasource="grid,list"
+        datasource="grid,list,collections"
         default="grid"
       />
             <property
         name="defaultSort"
         type="String"
         label="Default sort"
-        datasource="lastModified,title,rating,releaseYear,progress,mediaType,status"
+        datasource="lastModified,title,rating,releaseYear,progress,mediaType,status,collectionOrder"
         default="lastModified"
       />
             <property

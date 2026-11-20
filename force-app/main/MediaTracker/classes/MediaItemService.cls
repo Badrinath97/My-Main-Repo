@@ -25,6 +25,16 @@ public with sharing class MediaItemService {
 
   public static MediaPageData getMediaPage(MediaFilterData filter) {
     MediaFilterData normalized = (filter ?? new MediaFilterData()).normalize();
+    if (
+      !normalized.collectionIds.isEmpty() && normalized.includeSubCollections
+    ) {
+      // Picking "MCU" also shows items filed under "MCU › Infinity Saga".
+      normalized.collectionIds = new List<Id>(
+        MediaCollectionService.expandWithDescendants(
+          new Set<Id>(normalized.collectionIds)
+        )
+      );
+    }
     List<Media_Item__c> records = itemSelector.selectByFilter(normalized);
     Integer totalCount = itemSelector.countByFilter(normalized);
     return new MediaPageData(
@@ -134,6 +144,9 @@ public with sharing class MediaItemService {
     if (item.id != null) {
       requireRecord(item.id); // ownership check
     }
+    if (item.collectionId != null) {
+      MediaCollectionService.requireCollection(item.collectionId); // must be one of the user's collections
+    }
 
     Media_Item__c rec = item.toRecord();
     if (String.isBlank(rec.Status__c)) {
@@ -148,6 +161,13 @@ public with sharing class MediaItemService {
       MediaSeasonService.saveSeasons(
         rec.Id,
         item.seasons,
+        rec.Status__c == STATUS_COMPLETED
+      );
+    }
+    if (item.movies != null && tracksMovies(rec.Media_Type__c)) {
+      MediaSeasonService.saveMovies(
+        rec.Id,
+        item.movies,
         rec.Status__c == STATUS_COMPLETED
       );
     }
@@ -271,6 +291,12 @@ public with sharing class MediaItemService {
     return config != null &&
       config.Tracks_Progress__c == true &&
       config.Tracks_Seasons__c == true;
+  }
+
+  private static Boolean tracksMovies(String mediaType) {
+    Media_Type_Config__mdt config = typeConfigSelector.selectAllByMediaType()
+      .get(mediaType);
+    return config != null && config.Tracks_Movies__c == true;
   }
 
   private static Media_Item__c requireRecord(Id recordId) {

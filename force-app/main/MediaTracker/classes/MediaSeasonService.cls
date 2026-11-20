@@ -6,6 +6,10 @@
  *   Progress_Total__c   = SUM(Episode_Count__c), or blank while any season's count is unknown
  * syncParentProgress() keeps that true. It runs from MediaSeasonTrigger, so it
  * also covers seasons edited on the record page, by Data Loader, flows, etc.
+ *
+ * The same object also holds movies related to the series (Entry_Type__c =
+ * Movie). Movies are a separate watched/not-watched list: they never count
+ * toward the episode progress and +1/-1 skips them.
  */
 public with sharing class MediaSeasonService {
   @TestVisible
@@ -24,15 +28,70 @@ public with sharing class MediaSeasonService {
     Boolean markAllWatched
   ) {
     validateSeasons(seasons);
+    for (MediaSeasonData season : seasons) {
+      season.entryType = MediaSeasonData.TYPE_SEASON;
+    }
+    replaceEntries(
+      mediaItemId,
+      MediaSeasonData.TYPE_SEASON,
+      seasons,
+      markAllWatched
+    );
+  }
+
+  /**
+   * Replaces an item's related movies with the given list. Movies are
+   * numbered by their position in the list; seasons are left untouched.
+   * @param markAllWatched true when the item is being marked Completed
+   */
+  public static void saveMovies(
+    Id mediaItemId,
+    List<MediaSeasonData> movies,
+    Boolean markAllWatched
+  ) {
+    Integer position = 0;
+    for (MediaSeasonData movie : movies) {
+      position++;
+      movie.entryType = MediaSeasonData.TYPE_MOVIE;
+      movie.seasonNumber = position;
+      if (String.isBlank(movie.name)) {
+        throw new MediaItemService.MediaServiceException(
+          'Each movie needs a title.'
+        );
+      }
+    }
+    replaceEntries(
+      mediaItemId,
+      MediaSeasonData.TYPE_MOVIE,
+      movies,
+      markAllWatched
+    );
+  }
+
+  /** Upserts the given entries and deletes the item's other entries of that type. */
+  private static void replaceEntries(
+    Id mediaItemId,
+    String entryType,
+    List<MediaSeasonData> entries,
+    Boolean markAllWatched
+  ) {
     Map<Id, Media_Season__c> existing = new Map<Id, Media_Season__c>(
-      seasonSelector.selectByMediaItemIds(new Set<Id>{ mediaItemId })
+      MediaSeasonData.filterByType(
+        seasonSelector.selectByMediaItemIds(new Set<Id>{ mediaItemId }),
+        entryType
+      )
     );
 
     List<Media_Season__c> toUpsert = new List<Media_Season__c>();
-    for (MediaSeasonData season : seasons) {
+    for (MediaSeasonData season : entries) {
       if (season.id != null && !existing.containsKey(season.id)) {
         throw new MediaItemService.MediaServiceException(
-          'Season ' + season.seasonNumber + ' does not belong to this item.'
+          entryType +
+            ' ' +
+            (season.isMovie()
+              ? season.name
+              : String.valueOf(season.seasonNumber)) +
+            ' does not belong to this item.'
         );
       }
       Media_Season__c rec = season.toRecord(mediaItemId);
@@ -60,7 +119,11 @@ public with sharing class MediaSeasonService {
     List<Media_Season__c> seasons,
     Integer step
   ) {
-    if (seasons == null || seasons.isEmpty()) {
+    seasons = MediaSeasonData.filterByType(
+      seasons,
+      MediaSeasonData.TYPE_SEASON
+    );
+    if (seasons.isEmpty()) {
       return false;
     }
     Media_Season__c target = step >= 0
@@ -106,9 +169,12 @@ public with sharing class MediaSeasonService {
     for (
       Media_Item__c item : itemSelector.selectForProgressSync(mediaItemIds)
     ) {
-      List<Media_Season__c> seasons = seasonsByItem.get(item.Id);
-      if (seasons == null) {
-        continue; // all seasons removed: keep the item's own progress values
+      List<Media_Season__c> seasons = MediaSeasonData.filterByType(
+        seasonsByItem.get(item.Id),
+        MediaSeasonData.TYPE_SEASON
+      );
+      if (seasons.isEmpty()) {
+        continue; // no seasons (maybe only movies): keep the item's own progress values
       }
       Media_Item__c before = item.clone(true, true, false, false);
 

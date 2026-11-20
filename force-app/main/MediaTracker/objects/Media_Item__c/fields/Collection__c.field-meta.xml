@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Collection__c</fullName>
+    <label>Collection</label>
+    <description
+  >Franchise, universe or series this item belongs to, e.g. Marvel Cinematic Universe.</description>
+    <deleteConstraint>SetNull</deleteConstraint>
+    <referenceTo>Media_Collection__c</referenceTo>
+    <relationshipLabel>Media Items</relationshipLabel>
+    <relationshipName>Media_Items</relationshipName>
+    <required>false</required>
+    <type>Lookup</type>
+</CustomField>

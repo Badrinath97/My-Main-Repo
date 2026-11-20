@@ -27,6 +27,10 @@
         <value xsi:type="xsd:double">20</value>
     </values>
     <values>
+        <field>Tracks_Movies__c</field>
+        <value xsi:type="xsd:boolean">true</value>
+    </values>
+    <values>
         <field>Tracks_Progress__c</field>
         <value xsi:type="xsd:boolean">true</value>
     </values>

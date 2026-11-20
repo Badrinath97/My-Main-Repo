@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <Package xmlns="http://soap.sforce.com/2006/04/metadata">
     <types>
+        <members>MediaCollectionData</members>
+        <members>MediaCollectionSelector</members>
+        <members>MediaCollectionService</members>
+        <members>MediaCollectionServiceTest</members>
         <members>MediaFilterData</members>
         <members>MediaItemData</members>
         <members>MediaItemSelector</members>
@@ -29,9 +33,16 @@
         <name>CustomApplication</name>
     </types>
     <types>
+        <members>Media_Collection__c.Collection_Type__c</members>
+        <members>Media_Collection__c.Description__c</members>
+        <members>Media_Collection__c.Parent_Collection__c</members>
+        <members>Media_Collection__c.Poster_URL__c</members>
+        <members>Media_Item__c.Collection_Order__c</members>
+        <members>Media_Item__c.Collection__c</members>
         <members>Media_Item__c.Completed_Date__c</members>
         <members>Media_Item__c.Genre__c</members>
         <members>Media_Item__c.Is_Favorite__c</members>
+        <members>Media_Item__c.Language__c</members>
         <members>Media_Item__c.Media_Type__c</members>
         <members>Media_Item__c.Notes__c</members>
         <members>Media_Item__c.Platform__c</members>
@@ -43,15 +54,20 @@
         <members>Media_Item__c.Release_Year__c</members>
         <members>Media_Item__c.Start_Date__c</members>
         <members>Media_Item__c.Status__c</members>
+        <members>Media_Season__c.Aired_Date__c</members>
+        <members>Media_Season__c.Completed_Date__c</members>
+        <members>Media_Season__c.Entry_Type__c</members>
         <members>Media_Season__c.Episode_Count__c</members>
         <members>Media_Season__c.Episodes_Watched__c</members>
         <members>Media_Season__c.Media_Item__c</members>
         <members>Media_Season__c.Season_Number__c</members>
+        <members>Media_Type_Config__mdt.Hidden_Form_Fields__c</members>
         <members>Media_Type_Config__mdt.Icon_Name__c</members>
         <members>Media_Type_Config__mdt.Is_Active__c</members>
         <members>Media_Type_Config__mdt.Media_Type__c</members>
         <members>Media_Type_Config__mdt.Progress_Unit__c</members>
         <members>Media_Type_Config__mdt.Sort_Order__c</members>
+        <members>Media_Type_Config__mdt.Tracks_Movies__c</members>
         <members>Media_Type_Config__mdt.Tracks_Progress__c</members>
         <members>Media_Type_Config__mdt.Tracks_Seasons__c</members>
         <name>CustomField</name>
@@ -68,12 +84,14 @@
         <name>CustomMetadata</name>
     </types>
     <types>
+        <members>Media_Collection__c</members>
         <members>Media_Item__c</members>
         <members>Media_Season__c</members>
         <members>Media_Type_Config__mdt</members>
         <name>CustomObject</name>
     </types>
     <types>
+        <members>Media_Collection__c</members>
         <members>Media_Item__c</members>
         <members>Media_Tracker</members>
         <name>CustomTab</name>
@@ -83,12 +101,15 @@
         <name>FlexiPage</name>
     </types>
     <types>
+        <members>Media_Collection__c-Media Collection Layout</members>
         <members>Media_Item__c-Media Item Layout</members>
         <members>Media_Season__c-Media Season Layout</members>
         <name>Layout</name>
     </types>
     <types>
         <members>mediaCard</members>
+        <members>mediaCollectionForm</members>
+        <members>mediaCollectionList</members>
         <members>mediaFilterBar</members>
         <members>mediaItemForm</members>
         <members>mediaStats</members>
@@ -97,6 +118,7 @@
         <name>LightningComponentBundle</name>
     </types>
     <types>
+        <members>Media_Collection__c.My_Collections</members>
         <members>Media_Item__c.My_Media</members>
         <name>ListView</name>
     </types>
@@ -105,8 +127,11 @@
         <name>PermissionSet</name>
     </types>
     <types>
+        <members>Media_Collection__c.Parent_Not_Self</members>
+        <members>Media_Item__c.Collection_Order_Positive</members>
         <members>Media_Item__c.Progress_Within_Total</members>
         <members>Media_Item__c.Rating_Range</members>
+        <members>Media_Season__c.Completed_After_Aired</members>
         <members>Media_Season__c.Season_Number_Not_Negative</members>
         <members>Media_Season__c.Watched_Within_Episodes</members>
         <name>ValidationRule</name>

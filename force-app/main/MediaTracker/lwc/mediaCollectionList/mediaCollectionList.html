@@ -1,0 +1,82 @@
+<template>
+  <div class="toolbar">
+    <p class="slds-text-body_small slds-text-color_weak">
+      Group titles into franchises, cinematic universes or film series. Pick a
+      collection to see its titles in order.
+    </p>
+    <lightning-button
+      data-id="new-collection"
+      label="New collection"
+      icon-name="utility:add"
+      onclick={handleNew}
+    ></lightning-button>
+  </div>
+
+  <template lwc:if={hasCollections}>
+    <ul class="list">
+      <template for:each={rows} for:item="row">
+        <li key={row.id} class={row.rowClass} style={row.rowStyle}>
+          <lightning-icon
+            icon-name={row.iconName}
+            size="x-small"
+            class="slds-m-right_x-small"
+          ></lightning-icon>
+          <div class="main">
+            <button
+              class="slds-button name slds-truncate"
+              data-id={row.id}
+              title={row.path}
+              onclick={handleSelect}
+            >
+              {row.name}
+            </button>
+            <div class="meta slds-text-body_small slds-text-color_weak">
+              <template lwc:if={row.typeLabel}>
+                <span class="slds-badge slds-badge_lightest"
+                  >{row.typeLabel}</span
+                >
+              </template>
+              <span>{row.countLabel}</span>
+            </div>
+          </div>
+          <lightning-progress-bar
+            class="bar"
+            value={row.percent}
+            size="small"
+          ></lightning-progress-bar>
+          <lightning-button-menu
+            icon-size="x-small"
+            menu-alignment="right"
+            alternative-text="Collection actions"
+            data-id={row.id}
+            onselect={handleMenu}
+          >
+            <lightning-menu-item
+              value="edit"
+              label="Edit"
+              prefix-icon-name="utility:edit"
+            ></lightning-menu-item>
+            <lightning-menu-item
+              value="delete"
+              label="Delete"
+              prefix-icon-name="utility:delete"
+            ></lightning-menu-item>
+          </lightning-button-menu>
+        </li>
+      </template>
+    </ul>
+  </template>
+  <template lwc:else>
+    <div class="empty slds-text-align_center slds-text-color_weak">
+      <lightning-icon
+        icon-name="utility:layers"
+        size="large"
+        class="slds-m-bottom_small"
+      ></lightning-icon>
+      <p>
+        No collections yet. Create one such as "Marvel Cinematic Universe", then
+        add titles to it from their edit form.
+      </p>
+    </div>
+  </template>
+</template>

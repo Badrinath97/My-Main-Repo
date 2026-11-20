@@ -23,6 +23,8 @@
         type-options={typeOptions}
         status-options={statusOptions}
         sort-options={sortOptions}
+        language-options={languageOptions}
+        collection-options={collectionFilterOptions}
         filter={filter}
         view={view}
         onfilterchange={handleFilterChange}
@@ -38,55 +40,69 @@
         </div>
       </template>
 
-      <div class="slds-is-relative content">
-        <template lwc:if={isLoading}>
-          <lightning-spinner
-            size="small"
-            alternative-text="Loading"
-          ></lightning-spinner>
-        </template>
+      <template lwc:if={isCollectionsView}>
+        <c-media-collection-list
+          collections={collections}
+          type-options={collectionTypeOptions}
+          active-collection-id={filter.collectionId}
+          onselect={handleCollectionSelect}
+          onnew={handleNewCollection}
+          onedit={handleEditCollection}
+          ondelete={handleDeleteCollection}
+        ></c-media-collection-list>
+      </template>
+      <template lwc:else>
+        <div class="slds-is-relative content">
+          <template lwc:if={isLoading}>
+            <lightning-spinner
+              size="small"
+              alternative-text="Loading"
+            ></lightning-spinner>
+          </template>
 
-        <template lwc:if={hasItems}>
-          <div class={listClass}>
-            <template for:each={cards} for:item="card">
-              <c-media-card
-                key={card.key}
-                item={card.item}
-                type-config={card.config}
-                variant={view}
-                onedit={handleEdit}
-                ondelete={handleDelete}
-                onfavorite={handleFavorite}
-                onprogress={handleProgress}
-              ></c-media-card>
+          <template lwc:if={hasItems}>
+            <div class={listClass}>
+              <template for:each={cards} for:item="card">
+                <c-media-card
+                  key={card.key}
+                  item={card.item}
+                  type-config={card.config}
+                  variant={cardVariant}
+                  onedit={handleEdit}
+                  ondelete={handleDelete}
+                  onfavorite={handleFavorite}
+                  onprogress={handleProgress}
+                  oncollectionselect={handleCollectionSelect}
+                ></c-media-card>
+              </template>
+            </div>
+
+            <template lwc:if={hasMore}>
+              <div class="slds-align_absolute-center slds-m-top_medium">
+                <lightning-button
+                  data-id="load-more"
+                  label="Load more"
+                  onclick={handleLoadMore}
+                  disabled={isLoading}
+                ></lightning-button>
+              </div>
             </template>
-          </div>
-
-          <template lwc:if={hasMore}>
-            <div class="slds-align_absolute-center slds-m-top_medium">
-              <lightning-button
-                data-id="load-more"
-                label="Load more"
-                onclick={handleLoadMore}
-                disabled={isLoading}
-              ></lightning-button>
+          </template>
+          <template lwc:elseif={showEmptyState}>
+            <div class="empty slds-text-align_center slds-text-color_weak">
+              <lightning-icon
+                icon-name="utility:video"
+                size="large"
+                class="slds-m-bottom_small"
+              ></lightning-icon>
+              <p>{emptyMessage}</p>
             </div>
           </template>
-        </template>
-        <template lwc:elseif={showEmptyState}>
-          <div class="empty slds-text-align_center slds-text-color_weak">
-            <lightning-icon
-              icon-name="utility:video"
-              size="large"
-              class="slds-m-bottom_small"
-            ></lightning-icon>
-            <p>{emptyMessage}</p>
-          </div>
-        </template>
-      </div>
+        </div>
+      </template>
     </div>
 
-    <template lwc:if={hasItems}>
+    <template lwc:if={showFooter}>
       <p slot="footer" class="slds-text-body_small slds-text-color_weak">
         {footerText}
       </p>

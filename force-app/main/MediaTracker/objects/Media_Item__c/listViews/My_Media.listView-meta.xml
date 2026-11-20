@@ -5,6 +5,8 @@
     <columns>Media_Type__c</columns>
     <columns>Status__c</columns>
     <columns>Rating__c</columns>
+    <columns>Language__c</columns>
+    <columns>Collection__c</columns>
     <columns>Progress_Percent__c</columns>
     <filterScope>Mine</filterScope>
     <label>My Media</label>

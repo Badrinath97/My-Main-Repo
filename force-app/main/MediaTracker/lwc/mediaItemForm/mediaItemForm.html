@@ -59,7 +59,7 @@
             <template for:each={seasonRows} for:item="row">
               <div key={row.key} class="season-row">
                 <lightning-input
-                  class="season-number"
+                  class="cell cell_number"
                   type="number"
                   label="Season"
                   min="0"
@@ -70,6 +70,17 @@
                   onchange={handleSeasonChange}
                 ></lightning-input>
                 <lightning-input
+                  class="cell cell_name"
+                  label="Season name"
+                  placeholder="Optional, e.g. Shippuden"
+                  max-length="80"
+                  data-index={row.index}
+                  data-season-field="name"
+                  value={row.name}
+                  onchange={handleSeasonChange}
+                ></lightning-input>
+                <lightning-input
+                  class="cell cell_count"
                   type="number"
                   label="Episodes"
                   min="0"
@@ -80,6 +91,7 @@
                   onchange={handleSeasonChange}
                 ></lightning-input>
                 <lightning-input
+                  class="cell cell_count"
                   type="number"
                   label="Watched"
                   min="0"
@@ -89,6 +101,31 @@
                   value={row.episodesWatched}
                   onchange={handleSeasonChange}
                 ></lightning-input>
+                <template lwc:if={visible.seasonAiredDate}>
+                  <lightning-input
+                    class="cell cell_date"
+                    type="date"
+                    label="Aired"
+                    field-level-help="Date the season started airing."
+                    data-index={row.index}
+                    data-season-field="airedDate"
+                    value={row.airedDate}
+                    onchange={handleSeasonChange}
+                  ></lightning-input>
+                </template>
+                <template lwc:if={visible.seasonCompletedDate}>
+                  <lightning-input
+                    class="cell cell_date"
+                    type="date"
+                    label="Completed"
+                    field-level-help="Date the season finished airing. Leave blank while it is still airing."
+                    min={row.airedDate}
+                    data-index={row.index}
+                    data-season-field="completedDate"
+                    value={row.completedDate}
+                    onchange={handleSeasonChange}
+                  ></lightning-input>
+                </template>
                 <lightning-button-icon
                   class="season-remove"
                   icon-name="utility:delete"
@@ -111,6 +148,79 @@
             >
               Add seasons to track episodes per season. Overall progress is then
               calculated for you.
+            </p>
+          </template>
+        </div>
+      </template>
+
+      <template lwc:if={tracksMovies}>
+        <div class="slds-col slds-size_1-of-1 slds-m-top_small">
+          <div class="seasons-header">
+            <span class="slds-text-title_bold">Movies</span>
+            <lightning-button
+              data-id="add-movie"
+              label="Add movie"
+              icon-name="utility:add"
+              onclick={handleAddMovie}
+            ></lightning-button>
+          </div>
+          <template lwc:if={hasMovies}>
+            <template for:each={movieRows} for:item="row">
+              <div key={row.key} class="movie-row">
+                <lightning-input
+                  class="cell cell_title"
+                  label={row.label}
+                  placeholder="Movie title"
+                  required
+                  max-length="80"
+                  data-index={row.index}
+                  data-movie-field="name"
+                  value={row.name}
+                  onchange={handleMovieChange}
+                ></lightning-input>
+                <template lwc:if={visible.movieAiredDate}>
+                  <lightning-input
+                    class="cell cell_date"
+                    type="date"
+                    label="Aired"
+                    field-level-help="Release date of the movie."
+                    data-index={row.index}
+                    data-movie-field="airedDate"
+                    value={row.airedDate}
+                    onchange={handleMovieChange}
+                  ></lightning-input>
+                </template>
+                <lightning-input
+                  class="movie-watched"
+                  type="checkbox"
+                  label="Watched"
+                  data-index={row.index}
+                  data-movie-field="watched"
+                  checked={row.watched}
+                  onchange={handleMovieChange}
+                ></lightning-input>
+                <lightning-button-icon
+                  class="season-remove"
+                  icon-name="utility:delete"
+                  variant="border-filled"
+                  alternative-text="Remove movie"
+                  data-index={row.index}
+                  onclick={handleRemoveMovie}
+                ></lightning-button-icon>
+              </div>
+            </template>
+            <p
+              class="slds-text-body_small slds-text-color_weak slds-m-top_x-small"
+            >
+              {movieSummary}
+            </p>
+          </template>
+          <template lwc:else>
+            <p
+              class="slds-text-body_small slds-text-color_weak slds-m-top_x-small"
+            >
+              Add films related to this title (e.g. Demon Slayer: Mugen Train).
+              They are tracked separately from episodes.
             </p>
           </template>
         </div>
@@ -141,57 +251,68 @@
         </div>
       </template>
 
-      <div class="slds-col slds-size_1-of-2 slds-medium-size_1-of-4">
-        <lightning-input
-          data-field="rating"
-          type="number"
-          label="Rating (0-10)"
-          min="0"
-          max="10"
-          step="0.5"
-          value={draft.rating}
-          onchange={handleChange}
-        ></lightning-input>
-      </div>
-      <div class="slds-col slds-size_1-of-2 slds-medium-size_1-of-4">
-        <lightning-input
-          data-field="releaseYear"
-          type="number"
-          label="Release year"
-          min="1800"
-          max="2200"
-          value={draft.releaseYear}
-          onchange={handleChange}
-        ></lightning-input>
-      </div>
-      <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-4">
-        <lightning-input
-          data-field="genre"
-          label="Genre"
-          value={draft.genre}
-          onchange={handleChange}
-        ></lightning-input>
-      </div>
-      <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-4">
-        <lightning-input
-          data-field="platform"
-          label="Platform"
-          placeholder="Netflix, Kindle..."
-          value={draft.platform}
-          onchange={handleChange}
-        ></lightning-input>
-      </div>
+      <!-- Each block below can be hidden per media type (Hidden_Form_Fields__c). -->
+      <template lwc:if={visible.rating}>
+        <div class="slds-col slds-size_1-of-2 slds-medium-size_1-of-4">
+          <lightning-input
+            data-field="rating"
+            type="number"
+            label="Rating (0-10)"
+            min="0"
+            max="10"
+            step="0.5"
+            value={draft.rating}
+            onchange={handleChange}
+          ></lightning-input>
+        </div>
+      </template>
+      <template lwc:if={visible.releaseYear}>
+        <div class="slds-col slds-size_1-of-2 slds-medium-size_1-of-4">
+          <lightning-input
+            data-field="releaseYear"
+            type="number"
+            label="Release year"
+            min="1800"
+            max="2200"
+            value={draft.releaseYear}
+            onchange={handleChange}
+          ></lightning-input>
+        </div>
+      </template>
+      <template lwc:if={visible.genre}>
+        <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-4">
+          <lightning-input
+            data-field="genre"
+            label="Genre"
+            value={draft.genre}
+            onchange={handleChange}
+          ></lightning-input>
+        </div>
+      </template>
+      <template lwc:if={visible.platform}>
+        <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-4">
+          <lightning-input
+            data-field="platform"
+            label="Platform"
+            placeholder="Netflix, Kindle..."
+            value={draft.platform}
+            onchange={handleChange}
+          ></lightning-input>
+        </div>
+      </template>
 
-      <div class="slds-col slds-size_1-of-2">
-        <lightning-input
-          data-field="startDate"
-          type="date"
-          label="Started"
-          value={draft.startDate}
-          onchange={handleChange}
-        ></lightning-input>
-      </div>
-      <template lwc:if={isCompleted}>
+      <template lwc:if={visible.startDate}>
+        <div class="slds-col slds-size_1-of-2">
+          <lightning-input
+            data-field="startDate"
+            type="date"
+            label="Started"
+            value={draft.startDate}
+            onchange={handleChange}
+          ></lightning-input>
+        </div>
+      </template>
+      <template lwc:if={showCompletedDate}>
         <div class="slds-col slds-size_1-of-2">
           <lightning-input
             data-field="completedDate"
@@ -203,23 +324,94 @@
         </div>
       </template>
 
-      <div class="slds-col slds-size_1-of-1">
-        <lightning-input
-          data-field="posterUrl"
-          type="url"
-          label="Poster image URL"
-          value={draft.posterUrl}
-          onchange={handleChange}
-        ></lightning-input>
-      </div>
-      <div class="slds-col slds-size_1-of-1">
-        <lightning-textarea
-          data-field="notes"
-          label="Notes"
-          value={draft.notes}
-          onchange={handleChange}
-        ></lightning-textarea>
-      </div>
+      <template lwc:if={visible.language}>
+        <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
+          <lightning-combobox
+            data-field="language"
+            label="Language"
+            options={languageComboOptions}
+            value={languageValue}
+            onchange={handleChange}
+          ></lightning-combobox>
+        </div>
+      </template>
+      <template lwc:if={visible.collection}>
+        <div class="slds-col slds-size_2-of-3 slds-medium-size_1-of-3">
+          <lightning-combobox
+            data-field="collectionId"
+            label="Collection"
+            field-level-help="Franchise, universe or series, e.g. Marvel Cinematic Universe."
+            options={collectionComboOptions}
+            value={collectionValue}
+            onchange={handleChange}
+          ></lightning-combobox>
+        </div>
+      </template>
+      <template lwc:if={showCollectionOrder}>
+        <div class="slds-col slds-size_1-of-3 slds-medium-size_1-of-6">
+          <lightning-input
+            data-field="collectionOrder"
+            type="number"
+            label="Order"
+            min="0"
+            field-level-help="Position in the collection (release or watch order)."
+            value={draft.collectionOrder}
+            onchange={handleChange}
+          ></lightning-input>
+        </div>
+      </template>
+      <template lwc:if={showNewCollection}>
+        <div class="slds-col slds-size_1-of-1">
+          <div class="new-collection">
+            <lightning-input
+              data-collection-field="name"
+              label="New collection name"
+              placeholder="Marvel Cinematic Universe"
+              required
+              max-length="80"
+              value={newCollection.name}
+              onchange={handleNewCollectionChange}
+            ></lightning-input>
+            <lightning-combobox
+              data-collection-field="collectionType"
+              label="Collection type"
+              placeholder="Choose a type"
+              options={collectionTypeOptions}
+              value={newCollection.collectionType}
+              onchange={handleNewCollectionChange}
+            ></lightning-combobox>
+            <lightning-combobox
+              data-collection-field="parentId"
+              label="Part of"
+              options={newCollectionParentOptions}
+              value={newCollectionParentValue}
+              onchange={handleNewCollectionChange}
+            ></lightning-combobox>
+          </div>
+        </div>
+      </template>
+
+      <template lwc:if={visible.posterUrl}>
+        <div class="slds-col slds-size_1-of-1">
+          <lightning-input
+            data-field="posterUrl"
+            type="url"
+            label="Poster image URL"
+            value={draft.posterUrl}
+            onchange={handleChange}
+          ></lightning-input>
+        </div>
+      </template>
+      <template lwc:if={visible.notes}>
+        <div class="slds-col slds-size_1-of-1">
+          <lightning-textarea
+            data-field="notes"
+            label="Notes"
+            value={draft.notes}
+            onchange={handleChange}
+          ></lightning-textarea>
+        </div>
+      </template>
       <div class="slds-col slds-size_1-of-1 slds-p-top_x-small">
         <lightning-input
           data-field="isFavorite"

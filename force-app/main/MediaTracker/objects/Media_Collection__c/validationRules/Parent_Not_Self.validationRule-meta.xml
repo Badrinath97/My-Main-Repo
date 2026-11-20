@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Parent_Not_Self</fullName>
+    <active>true</active>
+    <errorConditionFormula
+  >AND(NOT(ISNEW()), Parent_Collection__c = Id)</errorConditionFormula>
+    <errorDisplayField>Parent_Collection__c</errorDisplayField>
+    <errorMessage>A collection can&apos;t be its own parent.</errorMessage>
+</ValidationRule>

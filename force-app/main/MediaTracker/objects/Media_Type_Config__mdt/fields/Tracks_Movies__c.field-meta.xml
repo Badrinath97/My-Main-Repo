@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Tracks_Movies__c</fullName>
+    <label>Tracks Movies</label>
+    <description
+  >When checked, items of this type can list related movies (e.g. an anime&apos;s films), each marked watched or not.</description>
+    <defaultValue>false</defaultValue>
+    <fieldManageability>DeveloperControlled</fieldManageability>
+    <type>Checkbox</type>
+</CustomField>

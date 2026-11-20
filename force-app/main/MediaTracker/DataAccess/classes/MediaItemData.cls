@@ -40,12 +40,30 @@ public class MediaItemData {
   public String notes { get; set; }
   @AuraEnabled
   public Datetime lastModifiedDate { get; set; }
+  /** Original language (or the language watched/read in). */
+  @AuraEnabled
+  public String language { get; set; }
+  /** Franchise / universe / series this item belongs to (Media_Collection__c). */
+  @AuraEnabled
+  public Id collectionId { get; set; }
+  /** Read-only: name of the collection, for display. */
+  @AuraEnabled
+  public String collectionName { get; set; }
+  /** Position within the collection, e.g. 1 for the first film. */
+  @AuraEnabled
+  public Integer collectionOrder { get; set; }
   /**
    * Seasons ordered by number. When saving: null = leave seasons untouched,
    * a list (even empty) = replace the item's seasons with exactly this list.
    */
   @AuraEnabled
   public List<MediaSeasonData> seasons { get; set; }
+  /**
+   * Movies related to the series/anime, in list order. When saving:
+   * null = leave movies untouched, a list (even empty) = replace them.
+   */
+  @AuraEnabled
+  public List<MediaSeasonData> movies { get; set; }
   /** The season being watched now: first unfinished season, else the last one. */
   @AuraEnabled
   public Integer currentSeasonNumber { get; set; }
@@ -72,8 +90,23 @@ public class MediaItemData {
     this.posterUrl = rec.Poster_URL__c;
     this.notes = rec.Notes__c;
     this.lastModifiedDate = rec.LastModifiedDate;
+    this.language = rec.Language__c;
+    this.collectionId = rec.Collection__c;
+    this.collectionName = rec.Collection__r?.Name;
+    this.collectionOrder = toInteger(rec.Collection_Order__c);
     this.progressPercent = calculatePercent();
-    this.seasons = MediaSeasonData.fromRecords(rec.Media_Seasons__r);
+    this.seasons = MediaSeasonData.fromRecords(
+      MediaSeasonData.filterByType(
+        rec.Media_Seasons__r,
+        MediaSeasonData.TYPE_SEASON
+      )
+    );
+    this.movies = MediaSeasonData.fromRecords(
+      MediaSeasonData.filterByType(
+        rec.Media_Seasons__r,
+        MediaSeasonData.TYPE_MOVIE
+      )
+    );
     this.currentSeasonNumber = findCurrentSeasonNumber();
   }
 
@@ -94,7 +127,13 @@ public class MediaItemData {
       Completed_Date__c = this.completedDate,
       Is_Favorite__c = this.isFavorite == true,
       Poster_URL__c = this.posterUrl,
-      Notes__c = this.notes
+      Notes__c = this.notes,
+      Language__c = this.language,
+      Collection__c = this.collectionId,
+      // An order only means something inside a collection.
+      Collection_Order__c = this.collectionId == null
+        ? null
+        : this.collectionOrder
     );
   }
 

@@ -9,22 +9,26 @@ All the feature's metadata is in one self-contained folder:
 ```
 force-app/main/MediaTracker/
 ├─ DataAccess/
-│  └─ classes/       Data classes (MediaItemData, MediaSeasonData, MediaFilterData,
-│                    MediaPageData, MediaStatsData, MediaTypeConfigData) and selectors
-│                    (MediaItemSelector, MediaSeasonSelector, MediaTypeConfigSelector)
-├─ classes/          MediaItemService, MediaSeasonService, MediaTrackerController,
-│                    tests, MediaTestDataFactory
+│  └─ classes/       Data classes (MediaItemData, MediaSeasonData, MediaCollectionData,
+│                    MediaFilterData, MediaPageData, MediaStatsData, MediaTypeConfigData)
+│                    and selectors (MediaItemSelector, MediaSeasonSelector,
+│                    MediaCollectionSelector, MediaTypeConfigSelector)
+├─ classes/          MediaItemService, MediaSeasonService, MediaCollectionService,
+│                    MediaTrackerController, tests, MediaTestDataFactory
 ├─ triggers/         MediaSeasonTrigger (keeps item progress in sync with its seasons)
 ├─ lwc/              mediaTracker, mediaCard, mediaFilterBar, mediaStats,
-│                    mediaItemForm, mediaTrackerUtils
-├─ objects/          Media_Item__c, Media_Season__c, Media_Type_Config__mdt
+│                    mediaItemForm, mediaCollectionList, mediaCollectionForm,
+│                    mediaTrackerUtils
+├─ objects/          Media_Item__c, Media_Season__c, Media_Collection__c,
+│                    Media_Type_Config__mdt
 │                    (fields, validation rules, list view)
 ├─ customMetadata/   Media_Type_Config records
 ├─ permissionsets/   Media_Tracker_User
 ├─ applications/     Media_Tracker Lightning app (App Launcher)
 ├─ flexipages/       Media_Tracker app page that hosts the mediaTracker component
-├─ layouts/          Media Item (with a Seasons related list) and Media Season layouts
-└─ tabs/             Media_Tracker (opens the app page), Media_Item__c (records)
+├─ layouts/          Media Item (Seasons related list), Media Season, Media Collection
+│                    (Media Items and Sub-collections related lists)
+└─ tabs/             Media_Tracker (opens the app page), Media_Item__c, Media_Collection__c
 ```
 
 The Salesforce CLI deploys every folder under `force-app`, so this layout needs no extra configuration. Metadata you **retrieve** from an org still lands in `force-app/main/default/`, so move it in here if it belongs to this feature.
@@ -38,13 +42,18 @@ mediaTracker  (container)   ───►  MediaTrackerController   thin @AuraEna
  ├─ mediaStats                          │
  ├─ mediaFilterBar                      ▼
  ├─ mediaCard  (× n)              MediaItemService         business rules, DML
- └─ mediaItemForm (modal)               │
+ ├─ mediaCollectionList           MediaSeasonService
+ ├─ mediaItemForm (modal)         MediaCollectionService
+ └─ mediaCollectionForm (modal)         │
 mediaTrackerUtils (shared)              ▼
                                   MediaItemSelector        all SOQL (USER_MODE)
+                                  MediaSeasonSelector
+                                  MediaCollectionSelector
                                   MediaTypeConfigSelector
                                         │
-                                  Data classes (DTOs): MediaItemData, MediaFilterData,
-                                  MediaPageData, MediaStatsData, MediaTypeConfigData
+                                  Data classes (DTOs): MediaItemData, MediaSeasonData,
+                                  MediaCollectionData, MediaFilterData, MediaPageData,
+                                  MediaStatsData, MediaTypeConfigData
 ```
 
 | Layer          | Responsibility                                                                                                                                         | Rules                                                                                        |
@@ -53,13 +62,14 @@ mediaTrackerUtils (shared)              ▼
 | **Selector**   | Every query. Always scoped to the running user's items.                                                                                                | `USER_MODE`, bind variables, and a whitelist for sort and group fields.                      |
 | **Service**    | Status lifecycle, progress, defaults, ownership checks, stats.                                                                                         | No SOQL. Selectors can be swapped in tests through `@TestVisible`.                           |
 | **Controller** | Exposes service methods to LWC and turns exceptions into `AuraHandledException`.                                                                       | No logic.                                                                                    |
-| **LWC**        | The container owns state and server calls. The children only display data and raise events (`edit`, `delete`, `favorite`, `progress`, `filterchange`). | Children never call Apex. The modal is the one exception, so it can show save errors inline. |
+| **LWC**        | The container owns state and server calls. The children only display data and raise events (`edit`, `delete`, `favorite`, `progress`, `filterchange`). | Children never call Apex. The modals are the exception, so they can show save errors inline. |
 
 ## Data model
 
-- **`Media_Item__c`**: private sharing, so each user sees only their own list. Fields: Title, Media Type, Status, Rating (0–10), Genre, Platform, Release Year, Progress Current/Total, Progress % (formula), Start/Completed Date, Favorite, Poster URL, Notes.
-- **`Media_Season__c`**: one row per season of a TV series or anime (Master-Detail to `Media_Item__c`). Fields: Season Number (0 = specials), Episodes (blank while still airing), Episodes Watched.
-- **`Media_Type_Config__mdt`**: sets how each type behaves (icon, whether progress is tracked, progress unit such as _Episodes_, _Pages_ or _Hours_, whether the type has **seasons**, and sort order). Seasons are on for TV Series and Anime.
+- **`Media_Item__c`**: private sharing, so each user sees only their own list. Fields: Title, Media Type, Status, Rating (0–10), Genre, Platform, Release Year, Progress Current/Total, Progress % (formula), Start/Completed Date, Favorite, Poster URL, Notes, **Language**, **Collection** (lookup) and **Order in Collection**.
+- **`Media_Season__c`**: one row per season of a TV series or anime, **or per related movie** (Master-Detail to `Media_Item__c`). Fields: Entry Type (Season / Movie), Season Number (0 = specials; for movies, the position in the list), Episodes (blank while still airing), Episodes Watched, Aired Date (season start / movie release), Completed Date (season finished airing; not used for movies). A movie is stored as one episode: watched or not.
+- **`Media_Collection__c`**: a franchise, cinematic universe, film series or phase (private sharing, like items). Fields: Collection Name, Collection Type (Cinematic Universe, Franchise, Series / Sequels, Phase / Saga, Other), Parent Collection (self-lookup, for nesting), Description, Poster URL.
+- **`Media_Type_Config__mdt`**: sets how each type behaves (icon, whether progress is tracked, progress unit such as _Episodes_, _Pages_ or _Hours_, whether the type has **seasons** or **related movies**, which **form fields to hide**, and sort order). Seasons and movies are on for TV Series and Anime.
 
 ### Business rules (MediaItemService)
 
@@ -77,6 +87,32 @@ mediaTrackerUtils (shared)              ▼
 - `MediaSeasonTrigger` recalculates the item whenever a season is created, edited or deleted from _anywhere_ (the tracker, the record page's Seasons related list, Data Loader, flows).
 - If every season is removed, the item keeps its last progress values and you can edit them by hand again.
 
+### Related movies (anime / series films)
+
+- The item form has a **Movies** section with an **Add movie** button for types with `Tracks_Movies__c` (Anime, TV Series). Each row has a title and a **Watched** checkbox.
+- Movies are tracked **separately from episodes**: they don't change "13 / 18 Episodes", and +1 / −1 never steps into a movie. The card shows "Movies · 1 / 2 watched", and hovering over that line lists the titles.
+- Movies keep the order of the list (numbered 1, 2, 3...). Saving only seasons leaves movies untouched, and saving only movies leaves seasons untouched.
+- Marking the item **Completed** also marks its movies watched.
+- To track a film as a full item instead (its own rating, status and card), add it as a separate **Movie** and put both in the same **collection**.
+
+### Collections and language (MediaCollectionService)
+
+- An item belongs to **at most one** collection. To model "Avengers: Endgame is in the Infinity Saga, which is part of the MCU", **nest** collections: create _Marvel Cinematic Universe_, then _Infinity Saga_ with Parent = MCU, and file the film under Infinity Saga.
+- Collections work for **every** media type (MCU films and series, a book saga, a game franchise).
+- Filtering by a collection **includes its sub-collections**, so MCU shows Infinity Saga titles too. Picking a collection switches the sort to **Collection order**: grouped by collection, then by Order in Collection, then by release year.
+- The collections view shows each collection's item and completed counts, **rolled up** from its sub-collections.
+- A collection can't be moved inside itself or one of its own sub-collections.
+- Deleting a collection **keeps its titles** (they leave the collection) and moves its sub-collections to the top level.
+- Items can only be added to the running user's own collections.
+- **Language** is a picklist (English, Hindi, Tamil, Telugu, Malayalam, Kannada, Bengali, Marathi, Japanese, Korean, Chinese, Spanish, French, German, Italian, Portuguese, Other). Add languages or collection types in Setup → Object Manager; the UI picks them up with no code change.
+
+### Using collections in the tracker
+
+- **Create:** click the **Collections** view button (layers icon) → **New collection**, or choose **+ New collection...** in an item's Collection field to create it while saving the item.
+- **Assign:** edit a title and set **Collection** and **Order** (e.g. Iron Man = 1).
+- **Browse:** click a collection in the Collections view, use the **Collection** filter, or click the collection chip on any card ("Infinity Saga #3").
+- **Language:** set it on the item form; filter with the **Language** filter. It shows in the card subtitle.
+
 ## Setup
 
 ```bash
@@ -88,16 +124,23 @@ Then open Lightning App Builder and drag **Media Tracker** onto an App, Home or 
 
 ### Component properties
 
-| Property              | Default            | Purpose                                                             |
-| --------------------- | ------------------ | ------------------------------------------------------------------- |
-| Title                 | `My Media Tracker` | Card header                                                         |
-| Limit to media types  | _(blank = all)_    | Comma-separated values, e.g. `Anime` or `Movie,TV Series`           |
-| Default view          | `grid`             | `grid` or `list`                                                    |
-| Default sort          | `lastModified`     | `title`, `rating`, `releaseYear`, `progress`, `mediaType`, `status` |
-| Items per page        | `12`               | 1–200. A **Load more** button fetches the next page.                |
-| Hide statistics / Add | `false`            | Use these for compact layouts                                       |
+| Property              | Default            | Purpose                                                                                |
+| --------------------- | ------------------ | -------------------------------------------------------------------------------------- |
+| Title                 | `My Media Tracker` | Card header                                                                            |
+| Limit to media types  | _(blank = all)_    | Comma-separated values, e.g. `Anime` or `Movie,TV Series`                              |
+| Default view          | `grid`             | `grid`, `list` or `collections`                                                        |
+| Default sort          | `lastModified`     | `title`, `rating`, `releaseYear`, `progress`, `mediaType`, `status`, `collectionOrder` |
+| Items per page        | `12`               | 1–200. A **Load more** button fetches the next page.                                   |
+| Hide statistics / Add | `false`            | Use these for compact layouts                                                          |
 
 Example: put three instances on one app page, titled "Anime", "Movies" and "Reading", each limited to its own type.
+
+## Hiding form fields per type (no code)
+
+Set **Hidden Form Fields** on a Media Type Config record to a comma-separated list of keys:
+`releaseYear`, `platform`, `genre`, `rating`, `startDate`, `completedDate`, `language`, `collection`, `posterUrl`, `notes`, `seasonAiredDate`, `seasonCompletedDate`, `movieAiredDate`.
+
+Anime ships with `releaseYear,platform,startDate,completedDate,collection`. Hidden fields are only hidden in the form: values that already exist are kept, and Apex still fills in dates automatically (e.g. the completed date when an item is marked Completed).
 
 ## Adding a new kind of entertainment (no code)
 
@@ -112,6 +155,6 @@ Poster URLs point to external sites. If posters don't appear, add the image host
 
 ## Tests
 
-- Apex: `MediaItemServiceTest`, `MediaItemSelectorTest`, `MediaTrackerControllerTest` (shared data comes from `MediaTestDataFactory`). They run as a Standard User with the permission set, so CRUD, FLS and sharing are enforced just as in production.
+- Apex: `MediaItemServiceTest`, `MediaItemSelectorTest`, `MediaSeasonServiceTest`, `MediaCollectionServiceTest`, `MediaTrackerControllerTest` (shared data comes from `MediaTestDataFactory`). They run as a Standard User with the permission set, so CRUD, FLS and sharing are enforced just as in production.
 - LWC Jest: `npm run test:unit`
-- **Known quirk:** if you deploy `Media_Season__c` _and_ run the Apex tests in the same deployment, the season tests fail with "sObject type 'Media_Season__c' is not supported". The updated permission set does not take effect inside that deployment's own test run. Deploy first, then run the tests (`sf apex run test --test-level RunLocalTests`).
+- **Known quirk:** if you deploy a new object (`Media_Season__c`, `Media_Collection__c`) _and_ run the Apex tests in the same deployment, its tests fail with "sObject type '...' is not supported". The updated permission set does not take effect inside that deployment's own test run. Deploy first, then run the tests (`sf apex run test --test-level RunLocalTests`).

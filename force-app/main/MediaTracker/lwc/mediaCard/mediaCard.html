@@ -58,6 +58,21 @@
         </p>
       </template>
 
+      <template lwc:if={hasCollection}>
+        <button
+          class="slds-button collection slds-truncate"
+          title={collectionTitle}
+          onclick={handleCollection}
+        >
+          <lightning-icon
+            icon-name="utility:layers"
+            size="xx-small"
+            class="slds-m-right_xx-small"
+          ></lightning-icon>
+          {collectionLabel}
+        </button>
+      </template>
+
       <div class="badges">
         <span class="slds-badge slds-badge_lightest">{typeLabel}</span>
         <span class={statusClass}>{item.status}</span>
@@ -65,6 +80,17 @@
           <span class="rating" title="Your rating">&#9733; {ratingLabel}</span>
         </template>
       </div>
+
+      <template lwc:if={hasMovies}>
+        <p class="movies slds-text-body_small" title={movieTitles}>
+          <lightning-icon
+            icon-name="utility:video"
+            size="xx-small"
+            class="slds-m-right_xx-small"
+          ></lightning-icon>
+          {movieLabel}
+        </p>
+      </template>
 
       <template lwc:if={tracksProgress}>
         <div class="progress">

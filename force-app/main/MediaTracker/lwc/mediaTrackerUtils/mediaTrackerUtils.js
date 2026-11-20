@@ -26,14 +26,56 @@ export const SORT_OPTIONS = Object.freeze([
   { label: "Release year", value: "releaseYear" },
   { label: "Progress", value: "progress" },
   { label: "Media type", value: "mediaType" },
-  { label: "Status", value: "status" }
+  { label: "Status", value: "status" },
+  { label: "Collection order", value: "collectionOrder" }
 ]);
 
 /** Sort keys that read naturally A→Z / low→high; everything else defaults to descending. */
-const ASCENDING_BY_DEFAULT = new Set(["title", "mediaType", "status"]);
+const ASCENDING_BY_DEFAULT = new Set([
+  "title",
+  "mediaType",
+  "status",
+  "collectionOrder"
+]);
 
 export function defaultDirectionFor(sortBy) {
   return ASCENDING_BY_DEFAULT.has(sortBy) ? "ASC" : "DESC";
+}
+
+/** MediaCollectionData[] (tree order) -> combobox options labelled with the full path. */
+export function collectionOptions(collections) {
+  return (collections || []).map((c) => ({
+    label: c.path || c.name,
+    value: c.id
+  }));
+}
+
+/**
+ * Ids of a collection and everything nested below it. Used to stop a
+ * collection from being moved inside itself.
+ */
+export function collectionWithDescendants(collections, rootId) {
+  const result = new Set();
+  const queue = [rootId];
+  while (queue.length) {
+    const id = queue.pop();
+    if (id && !result.has(id)) {
+      result.add(id);
+      (collections || [])
+        .filter((c) => c.parentId === id)
+        .forEach((c) => queue.push(c.id));
+    }
+  }
+  return result;
+}
+
+/**
+ * A season's own name, e.g. "Shippuden", or "" when it only has the automatic
+ * "Season N" name that Apex fills in when no name is given.
+ */
+export function customSeasonName(season) {
+  const name = (season?.name || "").trim();
+  return name === `Season ${season?.seasonNumber}` ? "" : name;
 }
 
 export function statusBadgeClass(status) {

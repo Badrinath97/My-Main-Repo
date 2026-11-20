@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Completed_Date__c</fullName>
+    <label>Completed Date</label>
+    <description
+  >Season: date it finished airing (blank while still airing). Not used for movies.</description>
+    <required>false</required>
+    <type>Date</type>
+</CustomField>

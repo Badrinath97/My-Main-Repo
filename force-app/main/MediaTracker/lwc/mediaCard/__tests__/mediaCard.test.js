@@ -181,3 +181,127 @@ describe("c-media-card seasons", () => {
     expect(element.shadowRoot.querySelector(".season")).toBeNull();
   });
 });
+
+describe("c-media-card collections and language", () => {
+  afterEach(() => {
+    while (document.body.firstChild) {
+      document.body.removeChild(document.body.firstChild);
+    }
+  });
+
+  it("shows the language in the subtitle", () => {
+    const element = render(
+      buildItem({ language: "Japanese", platform: null }),
+      ANIME_CONFIG
+    );
+    expect(element.shadowRoot.querySelector("p").textContent).toBe(
+      "2023 · Japanese"
+    );
+  });
+
+  it("shows the collection with its order and fires collectionselect", () => {
+    const element = render(
+      buildItem({
+        mediaType: "Movie",
+        collectionId: "c02",
+        collectionName: "Infinity Saga",
+        collectionOrder: 3
+      }),
+      MOVIE_CONFIG
+    );
+    const handler = jest.fn();
+    element.addEventListener("collectionselect", handler);
+
+    const chip = element.shadowRoot.querySelector("button.collection");
+    expect(chip.textContent.trim()).toBe("Infinity Saga #3");
+    chip.click();
+
+    expect(handler.mock.calls[0][0].detail).toEqual({
+      id: "a00000000000001",
+      collectionId: "c02"
+    });
+  });
+
+  it("omits the order when it is not set and hides the chip without a collection", () => {
+    const withCollection = render(
+      buildItem({ collectionId: "c01", collectionName: "MCU" }),
+      ANIME_CONFIG
+    );
+    expect(
+      withCollection.shadowRoot
+        .querySelector("button.collection")
+        .textContent.trim()
+    ).toBe("MCU");
+
+    const without = render(buildItem(), ANIME_CONFIG);
+    expect(without.shadowRoot.querySelector("button.collection")).toBeNull();
+  });
+});
+
+describe("c-media-card movies", () => {
+  afterEach(() => {
+    while (document.body.firstChild) {
+      document.body.removeChild(document.body.firstChild);
+    }
+  });
+
+  const MOVIES = [
+    { id: "m1", name: "Mugen Train", isComplete: true },
+    { id: "m2", name: "Infinity Castle", isComplete: false }
+  ];
+
+  it("shows how many related movies are watched, with titles on hover", () => {
+    const element = render(buildItem({ movies: MOVIES }), {
+      ...ANIME_CONFIG,
+      tracksMovies: true
+    });
+    const line = element.shadowRoot.querySelector(".movies");
+    expect(line.textContent.trim()).toBe("Movies · 1 / 2 watched");
+    expect(line.title).toBe("✓ Mugen Train\n○ Infinity Castle");
+  });
+
+  it("hides the movie line without movies or when the type has none", () => {
+    const noMovies = render(buildItem({ movies: [] }), {
+      ...ANIME_CONFIG,
+      tracksMovies: true
+    });
+    expect(noMovies.shadowRoot.querySelector(".movies")).toBeNull();
+
+    const notTracked = render(buildItem({ movies: MOVIES }), ANIME_CONFIG);
+    expect(notTracked.shadowRoot.querySelector(".movies")).toBeNull();
+  });
+});
+
+describe("c-media-card season names", () => {
+  afterEach(() => {
+    while (document.body.firstChild) {
+      document.body.removeChild(document.body.firstChild);
+    }
+  });
+
+  it("shows a season's own name but not the automatic 'Season N' name", () => {
+    const element = render(
+      buildItem({
+        currentSeasonNumber: 2,
+        seasons: [
+          {
+            seasonNumber: 1,
+            name: "Season 1",
+            episodeCount: 220,
+            episodesWatched: 220
+          },
+          {
+            seasonNumber: 2,
+            name: "Shippuden",
+            episodeCount: 500,
+            episodesWatched: 12
+          }
+        ]
+      }),
+      { ...ANIME_CONFIG, tracksSeasons: true }
+    );
+    expect(element.shadowRoot.querySelector(".season").textContent).toBe(
+      "Season 2: Shippuden · 12 / 500 · 2 seasons"
+    );
+  });
+});

@@ -7,6 +7,12 @@
     <label>Anime</label>
     <protected>false</protected>
     <values>
+        <field>Hidden_Form_Fields__c</field>
+        <value
+      xsi:type="xsd:string"
+    >releaseYear,platform,startDate,completedDate,collection</value>
+    </values>
+    <values>
         <field>Icon_Name__c</field>
         <value xsi:type="xsd:string">utility:magicwand</value>
     </values>
@@ -25,6 +31,10 @@
     <values>
         <field>Sort_Order__c</field>
         <value xsi:type="xsd:double">30</value>
+    </values>
+    <values>
+        <field>Tracks_Movies__c</field>
+        <value xsi:type="xsd:boolean">true</value>
     </values>
     <values>
         <field>Tracks_Progress__c</field>

@@ -18,6 +18,14 @@ public class MediaFilterData {
   @AuraEnabled
   public Boolean favoritesOnly { get; set; }
   @AuraEnabled
+  public List<String> languages { get; set; }
+  /** Only items in these collections. */
+  @AuraEnabled
+  public List<Id> collectionIds { get; set; }
+  /** Also include items of sub-collections (default true), e.g. MCU includes Infinity Saga. */
+  @AuraEnabled
+  public Boolean includeSubCollections { get; set; }
+  @AuraEnabled
   public String sortBy { get; set; }
   @AuraEnabled
   public String sortDirection { get; set; }
@@ -33,6 +41,9 @@ public class MediaFilterData {
     this.mediaTypes = cleanList(this.mediaTypes);
     this.statuses = cleanList(this.statuses);
     this.favoritesOnly = this.favoritesOnly == true;
+    this.languages = cleanList(this.languages);
+    this.collectionIds = cleanIds(this.collectionIds);
+    this.includeSubCollections = this.includeSubCollections != false;
     this.sortBy = String.isBlank(this.sortBy) ? DEFAULT_SORT : this.sortBy;
     this.sortDirection = 'ASC'.equalsIgnoreCase(this.sortDirection)
       ? 'ASC'
@@ -46,6 +57,18 @@ public class MediaFilterData {
       ? 0
       : Math.min(this.pageOffset, MAX_OFFSET);
     return this;
+  }
+
+  private static List<Id> cleanIds(List<Id> values) {
+    Set<Id> cleaned = new Set<Id>();
+    if (values != null) {
+      for (Id value : values) {
+        if (value != null) {
+          cleaned.add(value);
+        }
+      }
+    }
+    return new List<Id>(cleaned);
   }
 
   private static List<String> cleanList(List<String> values) {

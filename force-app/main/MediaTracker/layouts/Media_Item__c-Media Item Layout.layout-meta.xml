@@ -40,6 +40,29 @@
                 <behavior>Edit</behavior>
                 <field>Release_Year__c</field>
             </layoutItems>
+            <layoutItems>
+                <behavior>Edit</behavior>
+                <field>Language__c</field>
+            </layoutItems>
+        </layoutColumns>
+        <style>TwoColumnsTopToBottom</style>
+    </layoutSections>
+    <layoutSections>
+        <customLabel>true</customLabel>
+        <detailHeading>true</detailHeading>
+        <editHeading>true</editHeading>
+        <label>Collection</label>
+        <layoutColumns>
+            <layoutItems>
+                <behavior>Edit</behavior>
+                <field>Collection__c</field>
+            </layoutItems>
+        </layoutColumns>
+        <layoutColumns>
+            <layoutItems>
+                <behavior>Edit</behavior>
+                <field>Collection_Order__c</field>
+            </layoutItems>
         </layoutColumns>
         <style>TwoColumnsTopToBottom</style>
     </layoutSections>
@@ -116,9 +139,12 @@
     </layoutSections>
     <relatedLists>
         <fields>NAME</fields>
+        <fields>Entry_Type__c</fields>
         <fields>Season_Number__c</fields>
         <fields>Episode_Count__c</fields>
         <fields>Episodes_Watched__c</fields>
+        <fields>Aired_Date__c</fields>
+        <fields>Completed_Date__c</fields>
         <relatedList>Media_Season__c.Media_Item__c</relatedList>
         <sortField>Season_Number__c</sortField>
         <sortOrder>Asc</sortOrder>

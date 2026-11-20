@@ -1,0 +1,61 @@
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.list {
+  border: 1px solid var(--slds-g-color-border-base-1, #e5e5e5);
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--slds-g-color-border-base-1, #e5e5e5);
+  background: var(--slds-g-color-neutral-base-100, #fff);
+}
+
+.row:last-child {
+  border-bottom: none;
+}
+
+.row_active {
+  background: var(--slds-g-color-brand-base-95, #eef4ff);
+}
+
+.main {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.name {
+  display: block;
+  max-width: 100%;
+  font-weight: 700;
+  text-align: left;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.meta .slds-badge {
+  margin: 0;
+}
+
+.bar {
+  flex: 0 0 120px;
+}
+
+.empty {
+  padding: 2rem 1rem;
+}
