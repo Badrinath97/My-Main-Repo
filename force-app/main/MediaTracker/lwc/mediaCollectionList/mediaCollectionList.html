@@ -4,49 +4,120 @@
       Group titles into franchises, cinematic universes or film series. Pick a
       collection to see its titles in order.
     </p>
-    <button
-      class="gloss gbtn gloss_add"
-      data-id="new-collection"
-      onclick={handleNew}
-    >
-      <lightning-icon icon-name="utility:add" size="x-small"></lightning-icon>
-      New collection
-    </button>
+    <div class="toolbar-actions">
+      <template lwc:if={hasNesting}>
+        <button
+          class="gloss gbtn"
+          data-id="expand-all"
+          onclick={handleExpandAll}
+        >
+          <lightning-icon
+            icon-name="utility:expand_all"
+            size="x-small"
+          ></lightning-icon>
+          Expand all
+        </button>
+        <button
+          class="gloss gbtn"
+          data-id="collapse-all"
+          onclick={handleCollapseAll}
+        >
+          <lightning-icon
+            icon-name="utility:collapse_all"
+            size="x-small"
+          ></lightning-icon>
+          Collapse all
+        </button>
+      </template>
+      <button
+        class="gloss gbtn gloss_add"
+        data-id="new-collection"
+        onclick={handleNew}
+      >
+        <lightning-icon icon-name="utility:add" size="x-small"></lightning-icon>
+        New collection
+      </button>
+    </div>
   </div>
 
   <template lwc:if={hasCollections}>
-    <ul class="list">
+    <ul class="list glass">
       <template for:each={rows} for:item="row">
         <li key={row.id} class={row.rowClass} style={row.rowStyle}>
-          <lightning-icon
-            icon-name={row.iconName}
-            size="x-small"
-            class="slds-m-right_x-small"
-          ></lightning-icon>
+          <template lwc:if={row.hasChildren}>
+            <button
+              class="gloss gloss_small toggle"
+              data-toggle={row.id}
+              aria-expanded={row.expanded}
+              aria-label={row.toggleLabel}
+              title={row.toggleLabel}
+              onclick={handleToggle}
+            >
+              <lightning-icon
+                icon-name={row.toggleIcon}
+                size="xx-small"
+              ></lightning-icon>
+            </button>
+          </template>
+          <template lwc:else>
+            <span class="toggle-spacer"></span>
+          </template>
+
+          <template lwc:if={row.showPoster}>
+            <img
+              class="thumb"
+              src={row.posterUrl}
+              alt={row.name}
+              loading="lazy"
+              data-id={row.id}
+              onerror={handlePosterError}
+            />
+          </template>
+          <template lwc:else>
+            <span class={row.placeholderClass}>
+              <lightning-icon
+                icon-name="utility:layers"
+                size="x-small"
+                variant="inverse"
+              ></lightning-icon>
+            </span>
+          </template>
+
           <div class="main">
             <button
-              class="slds-button name slds-truncate"
+              class="name slds-truncate"
               data-id={row.id}
               title={row.path}
               onclick={handleSelect}
             >
               {row.name}
             </button>
-            <div class="meta slds-text-body_small slds-text-color_weak">
+            <div class="meta slds-text-body_small">
               <template lwc:if={row.typeLabel}>
-                <span class="slds-badge slds-badge_lightest"
-                  >{row.typeLabel}</span
-                >
+                <span class="chip">{row.typeLabel}</span>
               </template>
               <span>{row.countLabel}</span>
+              <template lwc:if={row.childLabel}>
+                <span class="children">· {row.childLabel}</span>
+              </template>
             </div>
           </div>
-          <lightning-progress-bar
-            class="bar"
-            value={row.percent}
-            size="small"
-          ></lightning-progress-bar>
+
+          <div class="progress" title={row.countLabel}>
+            <div
+              class="track"
+              role="progressbar"
+              aria-valuemin="0"
+              aria-valuemax="100"
+              aria-valuenow={row.percent}
+            >
+              <div class={row.fillClass} style={row.fillStyle}></div>
+            </div>
+            <span class="percent">{row.percent}%</span>
+          </div>
+
           <lightning-button-menu
+            class="btn-neutral btn-round glow-host"
             icon-size="x-small"
             menu-alignment="right"
             alternative-text="Collection actions"
