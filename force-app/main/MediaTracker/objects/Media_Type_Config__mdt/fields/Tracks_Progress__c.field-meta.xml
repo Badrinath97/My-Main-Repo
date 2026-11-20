@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Tracks_Progress__c</fullName>
+    <label>Tracks Progress</label>
+    <description
+  >When checked, the tracker shows a progress bar and a +1 button for this type.</description>
+    <defaultValue>false</defaultValue>
+    <fieldManageability>DeveloperControlled</fieldManageability>
+    <type>Checkbox</type>
+</CustomField>

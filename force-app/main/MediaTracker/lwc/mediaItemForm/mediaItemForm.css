@@ -1,0 +1,19 @@
+.seasons-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.25rem;
+}
+
+.season-row {
+  display: grid;
+  grid-template-columns: 5rem 1fr 1fr auto;
+  gap: 0.5rem;
+  align-items: end;
+  padding: 0.25rem 0;
+  border-bottom: 1px solid var(--slds-g-color-border-base-1, #e5e5e5);
+}
+
+.season-remove {
+  padding-bottom: 0.125rem;
+}

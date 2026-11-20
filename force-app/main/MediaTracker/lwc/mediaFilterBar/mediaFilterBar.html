@@ -1,0 +1,80 @@
+<template>
+  <div class="bar">
+    <lightning-input
+      class="search"
+      type="search"
+      label="Search"
+      variant="label-hidden"
+      placeholder="Search title, genre or platform..."
+      value={filter.searchTerm}
+      onchange={handleSearch}
+    ></lightning-input>
+
+    <template lwc:if={showTypeFilter}>
+      <lightning-combobox
+        class="combo"
+        label="Media type"
+        data-id="type"
+        variant="label-hidden"
+        options={typeComboOptions}
+        value={typeValue}
+        onchange={handleType}
+      ></lightning-combobox>
+    </template>
+
+    <lightning-combobox
+      class="combo"
+      label="Status"
+      data-id="status"
+      variant="label-hidden"
+      options={statusComboOptions}
+      value={statusValue}
+      onchange={handleStatus}
+    ></lightning-combobox>
+
+    <div class="sort">
+      <lightning-combobox
+        class="combo"
+        label="Sort by"
+        data-id="sort"
+        variant="label-hidden"
+        options={sortOptions}
+        value={filter.sortBy}
+        onchange={handleSort}
+      ></lightning-combobox>
+      <lightning-button-icon
+        icon-name={directionIcon}
+        variant="border-filled"
+        alternative-text={directionLabel}
+        title={directionLabel}
+        onclick={toggleDirection}
+      ></lightning-button-icon>
+    </div>
+
+    <div class="actions">
+      <lightning-button-icon-stateful
+        icon-name="utility:favorite"
+        selected={favoritesOnly}
+        alternative-text="Show favorites only"
+        title="Favorites only"
+        onclick={toggleFavorites}
+      ></lightning-button-icon-stateful>
+      <lightning-button-group>
+        <lightning-button-icon
+          icon-name="utility:tile_card_list"
+          variant={gridVariant}
+          alternative-text="Grid view"
+          title="Grid view"
+          onclick={showGrid}
+        ></lightning-button-icon>
+        <lightning-button-icon
+          icon-name="utility:list"
+          variant={listVariant}
+          alternative-text="List view"
+          title="List view"
+          onclick={showList}
+        ></lightning-button-icon>
+      </lightning-button-group>
+    </div>
+  </div>
+</template>

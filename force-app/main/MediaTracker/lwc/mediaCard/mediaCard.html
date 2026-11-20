@@ -1,0 +1,104 @@
+<template>
+  <article class={containerClass}>
+    <div class="media">
+      <template lwc:if={showPoster}>
+        <img
+          class="poster"
+          src={item.posterUrl}
+          alt={item.title}
+          onerror={handlePosterError}
+        />
+      </template>
+      <template lwc:else>
+        <div class="poster poster_placeholder">
+          <lightning-icon
+            icon-name={iconName}
+            size="medium"
+            alternative-text={typeLabel}
+          ></lightning-icon>
+        </div>
+      </template>
+    </div>
+
+    <div class="body">
+      <div class="header">
+        <h3 class="title slds-truncate" title={item.title}>{item.title}</h3>
+        <lightning-button-icon-stateful
+          icon-name="utility:favorite"
+          selected={item.isFavorite}
+          size="small"
+          alternative-text="Toggle favorite"
+          onclick={handleFavorite}
+        ></lightning-button-icon-stateful>
+        <lightning-button-menu
+          icon-size="small"
+          menu-alignment="right"
+          alternative-text="More actions"
+          onselect={handleMenuSelect}
+        >
+          <lightning-menu-item
+            value="edit"
+            label="Edit"
+            prefix-icon-name="utility:edit"
+          ></lightning-menu-item>
+          <lightning-menu-item
+            value="delete"
+            label="Delete"
+            prefix-icon-name="utility:delete"
+          ></lightning-menu-item>
+        </lightning-button-menu>
+      </div>
+
+      <template lwc:if={subtitle}>
+        <p
+          class="slds-text-body_small slds-text-color_weak slds-truncate"
+          title={subtitle}
+        >
+          {subtitle}
+        </p>
+      </template>
+
+      <div class="badges">
+        <span class="slds-badge slds-badge_lightest">{typeLabel}</span>
+        <span class={statusClass}>{item.status}</span>
+        <template lwc:if={hasRating}>
+          <span class="rating" title="Your rating">&#9733; {ratingLabel}</span>
+        </template>
+      </div>
+
+      <template lwc:if={tracksProgress}>
+        <div class="progress">
+          <template lwc:if={hasSeasons}>
+            <p class="season slds-text-body_small">{seasonLabel}</p>
+          </template>
+          <lightning-progress-bar
+            value={progressValue}
+            size="small"
+          ></lightning-progress-bar>
+          <div class="progress-row">
+            <span class="slds-text-body_small">{progressLabel}</span>
+            <div>
+              <lightning-button-icon
+                icon-name="utility:dash"
+                variant="border-filled"
+                size="x-small"
+                alternative-text="Decrease progress"
+                disabled={decrementDisabled}
+                onclick={handleDecrement}
+              ></lightning-button-icon>
+              <lightning-button-icon
+                class="slds-m-left_xx-small"
+                icon-name="utility:add"
+                variant="border-filled"
+                size="x-small"
+                alternative-text="Increase progress"
+                disabled={incrementDisabled}
+                onclick={handleIncrement}
+              ></lightning-button-icon>
+            </div>
+          </div>
+        </div>
+      </template>
+    </div>
+  </article>
+</template>

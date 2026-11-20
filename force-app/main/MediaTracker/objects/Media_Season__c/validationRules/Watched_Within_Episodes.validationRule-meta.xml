@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Watched_Within_Episodes</fullName>
+    <active>true</active>
+    <description
+  >Episodes watched cannot be negative or exceed the season's episode count.</description>
+    <errorConditionFormula>OR(
+  Episodes_Watched__c &lt; 0,
+  AND(NOT(ISBLANK(Episode_Count__c)), Episodes_Watched__c &gt; Episode_Count__c)
+)</errorConditionFormula>
+    <errorDisplayField>Episodes_Watched__c</errorDisplayField>
+    <errorMessage
+  >Episodes watched must be between 0 and the number of episodes in the season.</errorMessage>
+</ValidationRule>

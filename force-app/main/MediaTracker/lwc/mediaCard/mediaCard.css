@@ -1,0 +1,109 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
+.card {
+  display: flex;
+  height: 100%;
+  border: 1px solid var(--slds-g-color-border-base-1, #e5e5e5);
+  border-radius: 0.5rem;
+  background: var(--slds-g-color-neutral-base-100, #fff);
+  overflow: hidden;
+  transition: box-shadow 0.15s ease-in-out;
+}
+
+.card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+.card_grid {
+  flex-direction: column;
+}
+
+.card_list {
+  flex-direction: row;
+  align-items: stretch;
+}
+
+.poster {
+  display: block;
+  width: 100%;
+  object-fit: cover;
+  background: var(--slds-g-color-neutral-base-95, #f3f3f3);
+}
+
+.card_grid .poster {
+  height: 160px;
+}
+
+.card_list .media {
+  flex: 0 0 72px;
+}
+
+.card_list .poster {
+  height: 100%;
+  min-height: 96px;
+}
+
+.poster_placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.body {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0.5rem 0.75rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.title {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.badges .slds-badge {
+  margin: 0;
+}
+
+.rating {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #b8860b;
+}
+
+.progress {
+  margin-top: auto;
+  padding-top: 0.25rem;
+}
+
+.season {
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.progress-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.25rem;
+}

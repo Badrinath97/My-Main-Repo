@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Progress_Within_Total</fullName>
+    <active>true</active>
+    <description
+  >Current progress cannot be negative or exceed the total.</description>
+    <errorConditionFormula>OR(
+  Progress_Current__c &lt; 0,
+  AND(NOT(ISBLANK(Progress_Total__c)), Progress_Current__c &gt; Progress_Total__c)
+)</errorConditionFormula>
+    <errorDisplayField>Progress_Current__c</errorDisplayField>
+    <errorMessage>Progress must be between 0 and the total.</errorMessage>
+</ValidationRule>

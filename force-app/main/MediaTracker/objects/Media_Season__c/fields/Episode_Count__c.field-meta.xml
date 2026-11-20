@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Episode_Count__c</fullName>
+    <label>Episodes</label>
+    <description
+  >Number of episodes in this season. Leave blank while the season is still airing.</description>
+    <precision>4</precision>
+    <scale>0</scale>
+    <required>false</required>
+    <type>Number</type>
+</CustomField>

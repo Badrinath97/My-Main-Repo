@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomApplication xmlns="http://soap.sforce.com/2006/04/metadata">
+    <brand>
+        <headerColor>#0070D2</headerColor>
+        <shouldOverrideOrgTheme>false</shouldOverrideOrgTheme>
+    </brand>
+    <description
+  >Track movies, TV series, anime, books, games and more.</description>
+    <formFactors>Small</formFactors>
+    <formFactors>Large</formFactors>
+    <label>Media Tracker</label>
+    <navType>Standard</navType>
+    <tabs>Media_Tracker</tabs>
+    <tabs>Media_Item__c</tabs>
+    <uiType>Lightning</uiType>
+</CustomApplication>

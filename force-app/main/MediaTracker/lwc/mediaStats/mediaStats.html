@@ -1,0 +1,32 @@
+<template>
+  <template lwc:if={hasStats}>
+    <div class="tiles">
+      <template for:each={tiles} for:item="tile">
+        <button
+          key={tile.key}
+          class={tile.className}
+          data-status={tile.status}
+          onclick={handleTileClick}
+        >
+          <span class="value">{tile.value}</span>
+          <span class="label">{tile.label}</span>
+        </button>
+      </template>
+      <div class="tile tile_static">
+        <span class="value">{stats.favorites}</span>
+        <span class="label">Favorites</span>
+      </div>
+      <div class="tile tile_static">
+        <span class="value">{averageRating}</span>
+        <span class="label">Avg rating</span>
+      </div>
+    </div>
+    <div class="types">
+      <template for:each={typeBreakdown} for:item="type">
+        <span key={type.key} class="slds-badge slds-badge_lightest"
+          >{type.label}</span
+        >
+      </template>
+    </div>
+  </template>
+</template>

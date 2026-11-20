@@ -1,0 +1,23 @@
+.bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.search {
+  flex: 1 1 220px;
+}
+
+.combo {
+  flex: 0 1 160px;
+  min-width: 130px;
+}
+
+.sort,
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Media_Type__c</fullName>
+    <label>Media Type</label>
+    <description
+  >Kind of entertainment. Each value should have a matching Media_Type_Config__mdt record.</description>
+    <required>true</required>
+    <trackHistory>false</trackHistory>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Movie</fullName>
+                <default>true</default>
+                <label>Movie</label>
+            </value>
+            <value>
+                <fullName>TV Series</fullName>
+                <default>false</default>
+                <label>TV Series</label>
+            </value>
+            <value>
+                <fullName>Anime</fullName>
+                <default>false</default>
+                <label>Anime</label>
+            </value>
+            <value>
+                <fullName>Documentary</fullName>
+                <default>false</default>
+                <label>Documentary</label>
+            </value>
+            <value>
+                <fullName>Book</fullName>
+                <default>false</default>
+                <label>Book</label>
+            </value>
+            <value>
+                <fullName>Video Game</fullName>
+                <default>false</default>
+                <label>Video Game</label>
+            </value>
+            <value>
+                <fullName>Podcast</fullName>
+                <default>false</default>
+                <label>Podcast</label>
+            </value>
+            <value>
+                <fullName>Other</fullName>
+                <default>false</default>
+                <label>Other</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

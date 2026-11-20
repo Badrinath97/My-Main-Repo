@@ -1,0 +1,251 @@
+<template>
+  <lightning-modal-header label={label}></lightning-modal-header>
+
+  <lightning-modal-body>
+    <template lwc:if={error}>
+      <div
+        class="slds-notify slds-notify_alert slds-alert_error slds-m-bottom_small"
+        role="alert"
+      >
+        {error}
+      </div>
+    </template>
+
+    <div class="slds-grid slds-wrap slds-gutters_small">
+      <div class="slds-col slds-size_1-of-1">
+        <lightning-input
+          data-field="title"
+          label="Title"
+          required
+          max-length="80"
+          value={draft.title}
+          onchange={handleChange}
+        ></lightning-input>
+      </div>
+
+      <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
+        <lightning-combobox
+          data-field="mediaType"
+          label="Type"
+          required
+          options={typeOptions}
+          value={draft.mediaType}
+          onchange={handleChange}
+        ></lightning-combobox>
+      </div>
+      <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
+        <lightning-combobox
+          data-field="status"
+          label="Status"
+          required
+          options={resolvedStatusOptions}
+          value={draft.status}
+          onchange={handleChange}
+        ></lightning-combobox>
+      </div>
+
+      <template lwc:if={tracksSeasons}>
+        <div class="slds-col slds-size_1-of-1 slds-m-top_small">
+          <div class="seasons-header">
+            <span class="slds-text-title_bold">Seasons</span>
+            <lightning-button
+              data-id="add-season"
+              label="Add season"
+              icon-name="utility:add"
+              onclick={handleAddSeason}
+            ></lightning-button>
+          </div>
+          <template lwc:if={hasSeasons}>
+            <template for:each={seasonRows} for:item="row">
+              <div key={row.key} class="season-row">
+                <lightning-input
+                  class="season-number"
+                  type="number"
+                  label="Season"
+                  min="0"
+                  required
+                  data-index={row.index}
+                  data-season-field="seasonNumber"
+                  value={row.seasonNumber}
+                  onchange={handleSeasonChange}
+                ></lightning-input>
+                <lightning-input
+                  type="number"
+                  label="Episodes"
+                  min="0"
+                  field-level-help="Leave blank while the season is still airing."
+                  data-index={row.index}
+                  data-season-field="episodeCount"
+                  value={row.episodeCount}
+                  onchange={handleSeasonChange}
+                ></lightning-input>
+                <lightning-input
+                  type="number"
+                  label="Watched"
+                  min="0"
+                  max={row.maxWatched}
+                  data-index={row.index}
+                  data-season-field="episodesWatched"
+                  value={row.episodesWatched}
+                  onchange={handleSeasonChange}
+                ></lightning-input>
+                <lightning-button-icon
+                  class="season-remove"
+                  icon-name="utility:delete"
+                  variant="border-filled"
+                  alternative-text="Remove season"
+                  data-index={row.index}
+                  onclick={handleRemoveSeason}
+                ></lightning-button-icon>
+              </div>
+            </template>
+            <p
+              class="slds-text-body_small slds-text-color_weak slds-m-top_x-small"
+            >
+              {seasonSummary}
+            </p>
+          </template>
+          <template lwc:else>
+            <p
+              class="slds-text-body_small slds-text-color_weak slds-m-top_x-small"
+            >
+              Add seasons to track episodes per season. Overall progress is then
+              calculated for you.
+            </p>
+          </template>
+        </div>
+      </template>
+
+      <template lwc:if={showOverallProgress}>
+        <div class="slds-col slds-size_1-of-2">
+          <lightning-input
+            data-field="progressCurrent"
+            type="number"
+            label={progressCurrentLabel}
+            min="0"
+            max={progressMax}
+            value={draft.progressCurrent}
+            onchange={handleChange}
+          ></lightning-input>
+        </div>
+        <div class="slds-col slds-size_1-of-2">
+          <lightning-input
+            data-field="progressTotal"
+            type="number"
+            label={progressTotalLabel}
+            min="0"
+            field-level-help="Leave blank if unknown or still releasing."
+            value={draft.progressTotal}
+            onchange={handleChange}
+          ></lightning-input>
+        </div>
+      </template>
+
+      <div class="slds-col slds-size_1-of-2 slds-medium-size_1-of-4">
+        <lightning-input
+          data-field="rating"
+          type="number"
+          label="Rating (0-10)"
+          min="0"
+          max="10"
+          step="0.5"
+          value={draft.rating}
+          onchange={handleChange}
+        ></lightning-input>
+      </div>
+      <div class="slds-col slds-size_1-of-2 slds-medium-size_1-of-4">
+        <lightning-input
+          data-field="releaseYear"
+          type="number"
+          label="Release year"
+          min="1800"
+          max="2200"
+          value={draft.releaseYear}
+          onchange={handleChange}
+        ></lightning-input>
+      </div>
+      <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-4">
+        <lightning-input
+          data-field="genre"
+          label="Genre"
+          value={draft.genre}
+          onchange={handleChange}
+        ></lightning-input>
+      </div>
+      <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-4">
+        <lightning-input
+          data-field="platform"
+          label="Platform"
+          placeholder="Netflix, Kindle..."
+          value={draft.platform}
+          onchange={handleChange}
+        ></lightning-input>
+      </div>
+
+      <div class="slds-col slds-size_1-of-2">
+        <lightning-input
+          data-field="startDate"
+          type="date"
+          label="Started"
+          value={draft.startDate}
+          onchange={handleChange}
+        ></lightning-input>
+      </div>
+      <template lwc:if={isCompleted}>
+        <div class="slds-col slds-size_1-of-2">
+          <lightning-input
+            data-field="completedDate"
+            type="date"
+            label="Completed"
+            value={draft.completedDate}
+            onchange={handleChange}
+          ></lightning-input>
+        </div>
+      </template>
+
+      <div class="slds-col slds-size_1-of-1">
+        <lightning-input
+          data-field="posterUrl"
+          type="url"
+          label="Poster image URL"
+          value={draft.posterUrl}
+          onchange={handleChange}
+        ></lightning-input>
+      </div>
+      <div class="slds-col slds-size_1-of-1">
+        <lightning-textarea
+          data-field="notes"
+          label="Notes"
+          value={draft.notes}
+          onchange={handleChange}
+        ></lightning-textarea>
+      </div>
+      <div class="slds-col slds-size_1-of-1 slds-p-top_x-small">
+        <lightning-input
+          data-field="isFavorite"
+          type="toggle"
+          label="Favorite"
+          message-toggle-active=""
+          message-toggle-inactive=""
+          checked={draft.isFavorite}
+          onchange={handleChange}
+        ></lightning-input>
+      </div>
+    </div>
+  </lightning-modal-body>
+
+  <lightning-modal-footer>
+    <lightning-button
+      label="Cancel"
+      onclick={handleCancel}
+      disabled={isSaving}
+    ></lightning-button>
+    <lightning-button
+      class="slds-m-left_x-small"
+      variant="brand"
+      label={saveLabel}
+      onclick={handleSave}
+      disabled={isSaving}
+    ></lightning-button>
+  </lightning-modal-footer>
+</template>
