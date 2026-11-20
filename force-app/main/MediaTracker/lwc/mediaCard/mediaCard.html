@@ -31,11 +31,11 @@
 
       <template lwc:if={isGrid}>
         <div class="shade"></div>
-        <span class="chip chip_type">{typeLabel}</span>
+        <span class="chip chip_type glass-dark">{typeLabel}</span>
         <div class="overlay">
           <span class={statusClass}>{item.status}</span>
           <template lwc:if={hasRating}>
-            <span class="chip rating" title="Your rating"
+            <span class="chip rating glass-dark" title="Your rating"
               >&#9733; {ratingLabel}</span
             >
           </template>
@@ -54,14 +54,18 @@
             {item.title}
           </button>
         </h3>
-        <lightning-button-icon-stateful
-          icon-name="utility:favorite"
-          selected={item.isFavorite}
-          size="small"
-          alternative-text="Toggle favorite"
+        <button
+          class={favoriteClass}
+          data-id="favorite"
+          aria-pressed={favoritePressed}
+          aria-label={favoriteLabel}
+          title={favoriteLabel}
           onclick={handleFavorite}
-        ></lightning-button-icon-stateful>
+        >
+          &#9829;
+        </button>
         <lightning-button-menu
+          class="btn-neutral btn-round glow-host"
           icon-size="small"
           menu-alignment="right"
           alternative-text="More actions"
@@ -145,22 +149,32 @@
           <div class="progress-row">
             <span class="progress-label">{progressLabel}</span>
             <div class="steppers">
-              <lightning-button-icon
-                icon-name="utility:dash"
-                variant="border-filled"
-                size="x-small"
-                alternative-text="Decrease progress"
+              <button
+                class="gloss gloss_small gloss_minus"
+                data-id="decrement"
+                title="Decrease progress"
+                aria-label="Decrease progress"
                 disabled={decrementDisabled}
                 onclick={handleDecrement}
-              ></lightning-button-icon>
-              <lightning-button-icon
-                icon-name="utility:add"
-                variant="border-filled"
-                size="x-small"
-                alternative-text="Increase progress"
+              >
+                <lightning-icon
+                  icon-name="utility:dash"
+                  size="xx-small"
+                ></lightning-icon>
+              </button>
+              <button
+                class="gloss gloss_small gloss_plus"
+                data-id="increment"
+                title="Increase progress"
+                aria-label="Increase progress"
                 disabled={incrementDisabled}
                 onclick={handleIncrement}
-              ></lightning-button-icon>
+              >
+                <lightning-icon
+                  icon-name="utility:add"
+                  size="xx-small"
+                ></lightning-icon>
+              </button>
             </div>
           </div>
         </div>

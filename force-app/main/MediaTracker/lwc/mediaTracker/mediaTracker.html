@@ -1,21 +1,25 @@
 <template>
   <lightning-card title={cardTitle} icon-name="standard:video">
     <template lwc:if={showAddButton}>
-      <lightning-button
+      <button
+        class="gloss gbtn gloss_add"
         slot="actions"
-        variant="brand"
-        label="Add"
-        icon-name="utility:add"
+        data-id="add"
         onclick={handleAdd}
-      ></lightning-button>
+      >
+        <lightning-icon icon-name="utility:add" size="x-small"></lightning-icon>
+        Add
+      </button>
     </template>
 
-    <div class="slds-p-horizontal_medium">
+    <div class="surface">
       <template lwc:if={showStats}>
         <c-media-stats
           stats={stats}
           active-status={filter.status}
+          favorites-only={filter.favoritesOnly}
           onstatusselect={handleStatusSelect}
+          onfavoritesselect={handleFavoritesSelect}
         ></c-media-stats>
       </template>
 
@@ -92,12 +96,18 @@
                   </div>
                 </template>
                 <template lwc:elseif={showLoadMoreButton}>
-                  <lightning-button
+                  <button
+                    class="gloss gbtn"
                     data-id="load-more"
-                    label="Load more"
                     onclick={handleLoadMore}
                     disabled={isLoading}
-                  ></lightning-button>
+                  >
+                    <lightning-icon
+                      icon-name="utility:download"
+                      size="x-small"
+                    ></lightning-icon>
+                    Load more
+                  </button>
                 </template>
               </div>
             </template>

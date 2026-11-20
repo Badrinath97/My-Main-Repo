@@ -8,24 +8,41 @@
 
   <lightning-modal-footer>
     <div class="footer">
-      <lightning-button
-        variant="base"
-        label="Open record page"
-        icon-name="utility:new_window"
-        onclick={handleRecord}
-      ></lightning-button>
-      <div>
-        <lightning-button
-          label="Close"
-          onclick={handleClose}
-        ></lightning-button>
-        <lightning-button
-          class="slds-m-left_x-small"
-          variant="brand"
-          label="Edit"
-          icon-name="utility:edit"
+      <div class="footer-group">
+        <button class="gloss gbtn" data-id="record" onclick={handleRecord}>
+          <lightning-icon
+            icon-name="utility:new_window"
+            size="x-small"
+          ></lightning-icon>
+          Open record page
+        </button>
+        <button
+          class="gloss gbtn gloss_danger"
+          data-id="delete"
+          onclick={handleDelete}
+        >
+          <lightning-icon
+            icon-name="utility:delete"
+            size="x-small"
+          ></lightning-icon>
+          Delete
+        </button>
+      </div>
+      <div class="footer-group">
+        <button class="gloss gbtn" data-id="close" onclick={handleClose}>
+          Close
+        </button>
+        <button
+          class="gloss gbtn gloss_primary"
+          data-id="edit"
           onclick={handleEdit}
-        ></lightning-button>
+        >
+          <lightning-icon
+            icon-name="utility:edit"
+            size="x-small"
+          ></lightning-icon>
+          Edit
+        </button>
       </div>
     </div>
   </lightning-modal-footer>

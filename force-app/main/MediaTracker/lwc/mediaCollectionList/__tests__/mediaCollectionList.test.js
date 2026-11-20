@@ -83,7 +83,7 @@ describe("c-media-collection-list", () => {
       new CustomEvent("select", { detail: { value: "delete" } })
     );
     element.shadowRoot
-      .querySelector('lightning-button[data-id="new-collection"]')
+      .querySelector('button[data-id="new-collection"]')
       .click();
 
     expect(handlers.select.mock.calls[0][0].detail).toEqual({ id: "c02" });

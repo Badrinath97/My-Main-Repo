@@ -8,6 +8,8 @@ import getCollections from "@salesforce/apex/MediaTrackerController.getCollectio
 import { mockNavigate } from "lightning/navigation";
 import MediaItemForm from "c/mediaItemForm";
 import MediaItemDetailModal from "c/mediaItemDetailModal";
+import deleteMediaItem from "@salesforce/apex/MediaTrackerController.deleteMediaItem";
+import LightningConfirm from "lightning/confirm";
 
 // Records every NavigationMixin.Navigate call so the test can inspect it.
 jest.mock("lightning/navigation", () => {
@@ -64,6 +66,11 @@ jest.mock(
 jest.mock(
   "@salesforce/apex/MediaTrackerController.deleteCollection",
   () => ({ default: jest.fn() }),
+  { virtual: true }
+);
+jest.mock(
+  "lightning/confirm",
+  () => ({ __esModule: true, default: { open: jest.fn() } }),
   { virtual: true }
 );
 // lightning/modal has no Jest stub; the forms are exercised in the org.
@@ -238,9 +245,7 @@ describe("c-media-tracker", () => {
       totalCount: 4,
       hasMore: false
     });
-    element.shadowRoot
-      .querySelector('lightning-button[data-id="load-more"]')
-      .click();
+    element.shadowRoot.querySelector('button[data-id="load-more"]').click();
     await flush();
     expect(getMediaItems.mock.calls[2][0].filter.pageOffset).toBe(2);
     expect(element.shadowRoot.querySelectorAll("c-media-card")).toHaveLength(4);
@@ -270,9 +275,7 @@ describe("c-media-tracker", () => {
 
       // The scroll marker replaces the button.
       expect(
-        element.shadowRoot.querySelector(
-          'lightning-button[data-id="load-more"]'
-        )
+        element.shadowRoot.querySelector('button[data-id="load-more"]')
       ).toBeNull();
       const sentinel = element.shadowRoot.querySelector(
         '[data-id="scroll-sentinel"]'
@@ -300,6 +303,39 @@ describe("c-media-tracker", () => {
     } finally {
       delete global.IntersectionObserver;
     }
+  });
+
+  it("shows only favorites from the Favorites tile and clears it from a status tile", async () => {
+    const element = render();
+    await flush();
+    const stats = element.shadowRoot.querySelector("c-media-stats");
+
+    stats.dispatchEvent(
+      new CustomEvent("statusselect", { detail: { status: "Completed" } })
+    );
+    await flush();
+    stats.dispatchEvent(
+      new CustomEvent("favoritesselect", { detail: { favoritesOnly: true } })
+    );
+    await flush();
+    expect(getMediaItems.mock.calls.at(-1)[0].filter).toMatchObject({
+      favoritesOnly: true,
+      statuses: []
+    });
+    expect(stats.favoritesOnly).toBe(true);
+    expect(
+      element.shadowRoot.querySelector("c-media-filter-bar").filter
+        .favoritesOnly
+    ).toBe(true);
+
+    stats.dispatchEvent(
+      new CustomEvent("statusselect", { detail: { status: "" } })
+    );
+    await flush();
+    expect(getMediaItems.mock.calls.at(-1)[0].filter).toMatchObject({
+      favoritesOnly: false,
+      statuses: []
+    });
   });
 
   it("updates a card in place after progress changes", async () => {
@@ -426,6 +462,34 @@ describe("c-media-tracker", () => {
         actionName: "view"
       }
     });
+  });
+
+  it("deletes from the details window after confirmation", async () => {
+    const element = render();
+    await flush();
+    const card = element.shadowRoot.querySelector("c-media-card");
+
+    // Cancelled confirmation: nothing is deleted.
+    MediaItemDetailModal.open.mockResolvedValueOnce("delete");
+    LightningConfirm.open.mockResolvedValueOnce(false);
+    card.dispatchEvent(new CustomEvent("open", { detail: { id: "a01" } }));
+    await flush();
+    expect(LightningConfirm.open).toHaveBeenCalledTimes(1);
+    expect(deleteMediaItem).not.toHaveBeenCalled();
+
+    MediaItemDetailModal.open.mockResolvedValueOnce("delete");
+    LightningConfirm.open.mockResolvedValueOnce(true);
+    deleteMediaItem.mockResolvedValueOnce(undefined);
+    card.dispatchEvent(new CustomEvent("open", { detail: { id: "a01" } }));
+    await flush();
+
+    expect(deleteMediaItem).toHaveBeenCalledWith({ recordId: "a01" });
+    const cards = element.shadowRoot.querySelectorAll("c-media-card");
+    expect(cards).toHaveLength(1);
+    expect(cards[0].item.id).toBe("a02");
+    expect(
+      element.shadowRoot.querySelector('p[slot="footer"]').textContent
+    ).toBe("Showing 1 of 4");
   });
 
   it("shows the server error message", async () => {

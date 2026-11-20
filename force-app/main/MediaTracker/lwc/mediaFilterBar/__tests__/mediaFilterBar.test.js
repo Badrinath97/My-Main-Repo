@@ -133,9 +133,7 @@ describe("c-media-filter-bar", () => {
     const element = render();
     const handler = jest.fn();
     element.addEventListener("viewchange", handler);
-    element.shadowRoot
-      .querySelector('lightning-button-icon[title="Collections"]')
-      .click();
+    element.shadowRoot.querySelector('button[title="Collections"]').click();
     expect(handler.mock.calls[0][0].detail).toEqual({ view: "collections" });
   });
 
@@ -143,9 +141,7 @@ describe("c-media-filter-bar", () => {
     const element = render();
     const handler = jest.fn();
     element.addEventListener("viewchange", handler);
-    element.shadowRoot
-      .querySelector('lightning-button-icon[title="List view"]')
-      .click();
+    element.shadowRoot.querySelector('button[title="List view"]').click();
     expect(handler.mock.calls[0][0].detail).toEqual({ view: "list" });
   });
 });

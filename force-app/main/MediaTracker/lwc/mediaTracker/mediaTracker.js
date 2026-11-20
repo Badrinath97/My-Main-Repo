@@ -393,8 +393,24 @@ export default class MediaTracker extends NavigationMixin(LightningElement) {
     this.loadItems(true);
   }
 
+  /** Stats tiles are one group of quick filters: a status tile (or Total) clears Favorites. */
   handleStatusSelect(event) {
-    this.filter = { ...this.filter, status: event.detail.status };
+    this.filter = {
+      ...this.filter,
+      status: event.detail.status,
+      favoritesOnly: false
+    };
+    this.loadItems(true);
+  }
+
+  /** The Favorites tile shows every favorite, whatever its status. */
+  handleFavoritesSelect(event) {
+    const favoritesOnly = event.detail.favoritesOnly === true;
+    this.filter = {
+      ...this.filter,
+      favoritesOnly,
+      status: favoritesOnly ? "" : this.filter.status
+    };
     this.loadItems(true);
   }
 
@@ -427,6 +443,8 @@ export default class MediaTracker extends NavigationMixin(LightningElement) {
     });
     if (action === "edit") {
       this.openForm(item);
+    } else if (action === "delete") {
+      this.deleteItem(item.id);
     } else if (action === "record") {
       this[NavigationMixin.Navigate]({
         type: "standard__recordPage",
@@ -494,8 +512,13 @@ export default class MediaTracker extends NavigationMixin(LightningElement) {
     }
   }
 
-  async handleDelete(event) {
-    const item = this.items.find((i) => i.id === event.detail.id);
+  handleDelete(event) {
+    this.deleteItem(event.detail.id);
+  }
+
+  /** Asks for confirmation, then deletes. Used by the card menu and the details window. */
+  async deleteItem(recordId) {
+    const item = this.items.find((i) => i.id === recordId);
     const confirmed = await LightningConfirm.open({
       label: "Delete item",
       message: `Remove "${item?.title}" from your list? This cannot be undone.`,
@@ -505,8 +528,8 @@ export default class MediaTracker extends NavigationMixin(LightningElement) {
       return;
     }
     try {
-      await deleteMediaItem({ recordId: event.detail.id });
-      this.items = this.items.filter((i) => i.id !== event.detail.id);
+      await deleteMediaItem({ recordId });
+      this.items = this.items.filter((i) => i.id !== recordId);
       this.totalCount = Math.max(0, this.totalCount - 1);
       this.toast("Deleted", `"${item?.title}" was removed.`, "success");
       this.loadStats();

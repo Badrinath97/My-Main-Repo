@@ -1,3 +1,34 @@
+@import "c/mediaTrackerStyles";
+
+/* Tinted backdrop so the frosted (glass) tiles, toolbar and cards stand out. */
+.surface {
+  margin: 0 0.75rem;
+  padding: 1rem;
+  border-radius: 1.25rem;
+  background:
+    radial-gradient(
+      640px circle at 0% 0%,
+      rgba(129, 140, 248, 0.3),
+      transparent 70%
+    ),
+    radial-gradient(
+      560px circle at 100% 0%,
+      rgba(244, 114, 182, 0.24),
+      transparent 70%
+    ),
+    radial-gradient(
+      640px circle at 100% 100%,
+      rgba(45, 212, 191, 0.2),
+      transparent 70%
+    ),
+    radial-gradient(
+      640px circle at 0% 100%,
+      rgba(96, 165, 250, 0.24),
+      transparent 70%
+    ),
+    linear-gradient(180deg, #f5f6ff, #f7f5fb);
+}
+
 .content {
   min-height: 6rem;
 }

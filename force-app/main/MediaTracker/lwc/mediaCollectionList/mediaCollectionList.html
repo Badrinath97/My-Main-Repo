@@ -4,12 +4,14 @@
       Group titles into franchises, cinematic universes or film series. Pick a
       collection to see its titles in order.
     </p>
-    <lightning-button
+    <button
+      class="gloss gbtn gloss_add"
       data-id="new-collection"
-      label="New collection"
-      icon-name="utility:add"
       onclick={handleNew}
-    ></lightning-button>
+    >
+      <lightning-icon icon-name="utility:add" size="x-small"></lightning-icon>
+      New collection
+    </button>
   </div>
 
   <template lwc:if={hasCollections}>

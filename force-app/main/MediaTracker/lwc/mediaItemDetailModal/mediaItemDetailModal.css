@@ -1,5 +1,13 @@
+@import "c/mediaTrackerStyles";
+
 .footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+
+.footer-group {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
 }

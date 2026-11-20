@@ -48,12 +48,17 @@
         <div class="slds-col slds-size_1-of-1 slds-m-top_small">
           <div class="seasons-header">
             <span class="slds-text-title_bold">Seasons</span>
-            <lightning-button
+            <button
+              class="gloss gbtn gloss_add"
               data-id="add-season"
-              label="Add season"
-              icon-name="utility:add"
               onclick={handleAddSeason}
-            ></lightning-button>
+            >
+              <lightning-icon
+                icon-name="utility:add"
+                size="x-small"
+              ></lightning-icon>
+              Add season
+            </button>
           </div>
           <template lwc:if={hasSeasons}>
             <template for:each={seasonRows} for:item="row">
@@ -126,14 +131,18 @@
                     onchange={handleSeasonChange}
                   ></lightning-input>
                 </template>
-                <lightning-button-icon
-                  class="season-remove"
-                  icon-name="utility:delete"
-                  variant="border-filled"
-                  alternative-text="Remove season"
+                <button
+                  class="season-remove gloss gloss_danger"
+                  title="Remove season"
+                  aria-label="Remove season"
                   data-index={row.index}
                   onclick={handleRemoveSeason}
-                ></lightning-button-icon>
+                >
+                  <lightning-icon
+                    icon-name="utility:delete"
+                    size="xx-small"
+                  ></lightning-icon>
+                </button>
               </div>
             </template>
             <p
@@ -157,12 +166,17 @@
         <div class="slds-col slds-size_1-of-1 slds-m-top_small">
           <div class="seasons-header">
             <span class="slds-text-title_bold">Movies</span>
-            <lightning-button
+            <button
+              class="gloss gbtn gloss_add"
               data-id="add-movie"
-              label="Add movie"
-              icon-name="utility:add"
               onclick={handleAddMovie}
-            ></lightning-button>
+            >
+              <lightning-icon
+                icon-name="utility:add"
+                size="x-small"
+              ></lightning-icon>
+              Add movie
+            </button>
           </div>
           <template lwc:if={hasMovies}>
             <template for:each={movieRows} for:item="row">
@@ -199,14 +213,18 @@
                   checked={row.watched}
                   onchange={handleMovieChange}
                 ></lightning-input>
-                <lightning-button-icon
-                  class="season-remove"
-                  icon-name="utility:delete"
-                  variant="border-filled"
-                  alternative-text="Remove movie"
+                <button
+                  class="season-remove gloss gloss_danger"
+                  title="Remove movie"
+                  aria-label="Remove movie"
                   data-index={row.index}
                   onclick={handleRemoveMovie}
-                ></lightning-button-icon>
+                >
+                  <lightning-icon
+                    icon-name="utility:delete"
+                    size="xx-small"
+                  ></lightning-icon>
+                </button>
               </div>
             </template>
             <p
@@ -427,17 +445,27 @@
   </lightning-modal-body>
 
   <lightning-modal-footer>
-    <lightning-button
-      label="Cancel"
-      onclick={handleCancel}
-      disabled={isSaving}
-    ></lightning-button>
-    <lightning-button
-      class="slds-m-left_x-small"
-      variant="brand"
-      label={saveLabel}
-      onclick={handleSave}
-      disabled={isSaving}
-    ></lightning-button>
+    <div class="footer-actions">
+      <button
+        class="gloss gbtn"
+        data-id="cancel"
+        onclick={handleCancel}
+        disabled={isSaving}
+      >
+        Cancel
+      </button>
+      <button
+        class="gloss gbtn gloss_save"
+        data-id="save"
+        onclick={handleSave}
+        disabled={isSaving}
+      >
+        <lightning-icon
+          icon-name="utility:check"
+          size="x-small"
+        ></lightning-icon>
+        {saveLabel}
+      </button>
+    </div>
   </lightning-modal-footer>
 </template>

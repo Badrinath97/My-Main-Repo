@@ -4,7 +4,8 @@ import LightningModal from "lightning/modal";
 /**
  * Details window for one media item. Usage:
  *   const action = await MediaItemDetailModal.open({ size: 'medium', label, item, typeConfig });
- * Resolves with 'edit', 'record' (open the record page), or undefined when closed.
+ * Resolves with 'edit', 'record' (open the record page), 'delete' (the tracker
+ * asks for confirmation before deleting), or undefined when closed.
  */
 export default class MediaItemDetailModal extends LightningModal {
   @api item;
@@ -12,6 +13,10 @@ export default class MediaItemDetailModal extends LightningModal {
 
   handleEdit() {
     this.close("edit");
+  }
+
+  handleDelete() {
+    this.close("delete");
   }
 
   handleRecord() {

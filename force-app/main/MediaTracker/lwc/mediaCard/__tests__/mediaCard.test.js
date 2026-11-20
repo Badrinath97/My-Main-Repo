@@ -72,7 +72,7 @@ describe("c-media-card", () => {
   it("disables +1 when progress reached the total", () => {
     const element = render(buildItem({ progressCurrent: 28 }), ANIME_CONFIG);
     const [minus, plus] = element.shadowRoot.querySelectorAll(
-      ".progress-row lightning-button-icon"
+      ".progress-row button"
     );
     expect(minus.disabled).toBe(false);
     expect(plus.disabled).toBe(true);
@@ -91,8 +91,8 @@ describe("c-media-card", () => {
     );
     const root = element.shadowRoot;
 
-    root.querySelectorAll(".progress-row lightning-button-icon")[1].click();
-    root.querySelector("lightning-button-icon-stateful").click();
+    root.querySelectorAll(".progress-row button")[1].click();
+    root.querySelector('button[data-id="favorite"]').click();
     const menu = root.querySelector("lightning-button-menu");
     menu.dispatchEvent(
       new CustomEvent("select", { detail: { value: "edit" } })

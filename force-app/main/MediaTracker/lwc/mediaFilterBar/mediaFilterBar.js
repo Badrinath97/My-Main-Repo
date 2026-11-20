@@ -57,8 +57,32 @@ export default class MediaFilterBar extends LightningElement {
     return this.filter?.collectionId || ALL;
   }
 
-  get collectionsVariant() {
-    return this.view === "collections" ? "brand" : "border";
+  get isGrid() {
+    return this.view === "grid" || !this.view;
+  }
+
+  get gridClass() {
+    return glossClass(this.isGrid);
+  }
+
+  get gridPressed() {
+    return String(this.isGrid);
+  }
+
+  get listClass() {
+    return glossClass(this.view === "list");
+  }
+
+  get listPressed() {
+    return String(this.view === "list");
+  }
+
+  get collectionsClass() {
+    return glossClass(this.view === "collections");
+  }
+
+  get collectionsPressed() {
+    return String(this.view === "collections");
   }
 
   get typeComboOptions() {
@@ -84,6 +108,14 @@ export default class MediaFilterBar extends LightningElement {
     return this.filter?.favoritesOnly === true;
   }
 
+  get favoritesClass() {
+    return `gloss gloss_fav${this.favoritesOnly ? " gloss_on" : ""}`;
+  }
+
+  get favoritesPressed() {
+    return String(this.favoritesOnly);
+  }
+
   get directionIcon() {
     return this.filter?.sortDirection === "ASC"
       ? "utility:arrowup"
@@ -92,14 +124,6 @@ export default class MediaFilterBar extends LightningElement {
 
   get directionLabel() {
     return this.filter?.sortDirection === "ASC" ? "Ascending" : "Descending";
-  }
-
-  get gridVariant() {
-    return this.view === "grid" || !this.view ? "brand" : "border";
-  }
-
-  get listVariant() {
-    return this.view === "list" ? "brand" : "border";
   }
 
   handleSearch(event) {
@@ -162,6 +186,10 @@ export default class MediaFilterBar extends LightningElement {
   notify(change) {
     this.dispatchEvent(new CustomEvent("filterchange", { detail: change }));
   }
+}
+
+function glossClass(selected) {
+  return selected ? "gloss gloss_on" : "gloss";
 }
 
 function fromCombo(value) {

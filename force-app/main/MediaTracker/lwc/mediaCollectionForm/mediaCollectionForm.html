@@ -56,17 +56,27 @@
   </lightning-modal-body>
 
   <lightning-modal-footer>
-    <lightning-button
-      label="Cancel"
-      onclick={handleCancel}
-      disabled={isSaving}
-    ></lightning-button>
-    <lightning-button
-      class="slds-m-left_x-small"
-      variant="brand"
-      label={saveLabel}
-      onclick={handleSave}
-      disabled={isSaving}
-    ></lightning-button>
+    <div class="footer-actions">
+      <button
+        class="gloss gbtn"
+        data-id="cancel"
+        onclick={handleCancel}
+        disabled={isSaving}
+      >
+        Cancel
+      </button>
+      <button
+        class="gloss gbtn gloss_save"
+        data-id="save"
+        onclick={handleSave}
+        disabled={isSaving}
+      >
+        <lightning-icon
+          icon-name="utility:check"
+          size="x-small"
+        ></lightning-icon>
+        {saveLabel}
+      </button>
+    </div>
   </lightning-modal-footer>
 </template>

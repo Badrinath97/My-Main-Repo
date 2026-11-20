@@ -1,5 +1,5 @@
 <template>
-  <div class="bar">
+  <div class="bar glass">
     <lightning-input
       class="search"
       type="search"
@@ -66,46 +66,69 @@
         value={filter.sortBy}
         onchange={handleSort}
       ></lightning-combobox>
-      <lightning-button-icon
-        icon-name={directionIcon}
-        variant="border-filled"
-        alternative-text={directionLabel}
+      <button
+        class="gloss"
+        data-id="direction"
         title={directionLabel}
+        aria-label={directionLabel}
         onclick={toggleDirection}
-      ></lightning-button-icon>
+      >
+        <lightning-icon
+          icon-name={directionIcon}
+          size="x-small"
+        ></lightning-icon>
+      </button>
     </div>
 
     <div class="actions">
-      <lightning-button-icon-stateful
-        icon-name="utility:favorite"
-        selected={favoritesOnly}
-        alternative-text="Show favorites only"
+      <button
+        class={favoritesClass}
+        data-id="favorites"
+        aria-pressed={favoritesPressed}
+        aria-label="Show favorites only"
         title="Favorites only"
         onclick={toggleFavorites}
-      ></lightning-button-icon-stateful>
-      <lightning-button-group>
-        <lightning-button-icon
-          icon-name="utility:tile_card_list"
-          variant={gridVariant}
-          alternative-text="Grid view"
+      >
+        &#9829;
+      </button>
+      <div class="views" role="group" aria-label="View">
+        <button
+          class={gridClass}
           title="Grid view"
+          aria-label="Grid view"
+          aria-pressed={gridPressed}
           onclick={showGrid}
-        ></lightning-button-icon>
-        <lightning-button-icon
-          icon-name="utility:list"
-          variant={listVariant}
-          alternative-text="List view"
+        >
+          <lightning-icon
+            icon-name="utility:tile_card_list"
+            size="x-small"
+          ></lightning-icon>
+        </button>
+        <button
+          class={listClass}
           title="List view"
+          aria-label="List view"
+          aria-pressed={listPressed}
           onclick={showList}
-        ></lightning-button-icon>
-        <lightning-button-icon
-          icon-name="utility:layers"
-          variant={collectionsVariant}
-          alternative-text="Collections"
+        >
+          <lightning-icon
+            icon-name="utility:list"
+            size="x-small"
+          ></lightning-icon>
+        </button>
+        <button
+          class={collectionsClass}
           title="Collections"
+          aria-label="Collections"
+          aria-pressed={collectionsPressed}
           onclick={showCollections}
-        ></lightning-button-icon>
-      </lightning-button-group>
+        >
+          <lightning-icon
+            icon-name="utility:layers"
+            size="x-small"
+          ></lightning-icon>
+        </button>
+      </div>
     </div>
   </div>
 </template>

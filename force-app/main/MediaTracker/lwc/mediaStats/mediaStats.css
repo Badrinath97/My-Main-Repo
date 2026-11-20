@@ -1,3 +1,5 @@
+@import "c/mediaTrackerStyles";
+
 .tiles {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
@@ -13,9 +15,7 @@
   align-items: flex-start;
   gap: 0.125rem;
   padding: 0.75rem 0.875rem 0.625rem;
-  border: 1px solid var(--slds-g-color-border-base-1, #e5e7eb);
-  border-radius: 0.75rem;
-  background: var(--slds-g-color-neutral-base-100, #fff);
+  border-radius: 0.875rem;
   text-align: left;
   font: inherit;
   color: inherit;
@@ -48,8 +48,10 @@ button.tile:focus-visible {
 
 .tile_active {
   border-color: var(--accent);
-  box-shadow: inset 0 0 0 1px var(--accent);
-  background: color-mix(in srgb, var(--accent) 9%, #fff);
+  box-shadow:
+    inset 0 0 0 1px var(--accent),
+    0 8px 20px -10px var(--accent);
+  background: color-mix(in srgb, var(--accent) 14%, rgba(255, 255, 255, 0.75));
 }
 
 .tile_total {
@@ -71,7 +73,7 @@ button.tile:focus-visible {
   --accent: #ba0517;
 }
 .tile_favorites {
-  --accent: #e53e7a;
+  --accent: #e11d74;
 }
 .tile_rating {
   --accent: #d69e2e;
@@ -100,6 +102,7 @@ button.tile:focus-visible {
   background: var(--accent);
 }
 
+.tile_favorites .label,
 .tile_static .label {
   color: var(--accent);
 }
@@ -114,8 +117,7 @@ button.tile:focus-visible {
 .type-chip {
   padding: 0.125rem 0.625rem;
   border-radius: 999px;
-  background: var(--slds-g-color-neutral-base-95, #f3f4f6);
   font-size: 0.75rem;
   font-weight: 600;
-  color: var(--slds-g-color-neutral-base-30, #444);
+  color: #334155;
 }

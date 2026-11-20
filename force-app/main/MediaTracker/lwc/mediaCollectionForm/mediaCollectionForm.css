@@ -1,0 +1,8 @@
+@import "c/mediaTrackerStyles";
+
+/* Footer buttons: Cancel and Save side by side, on the right. */
+.footer-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.625rem;
+}

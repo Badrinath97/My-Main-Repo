@@ -184,6 +184,18 @@ export default class MediaCard extends LightningElement {
     }
   }
 
+  get favoriteClass() {
+    return `gloss gloss_small gloss_fav${this.item?.isFavorite ? " gloss_on" : ""}`;
+  }
+
+  get favoritePressed() {
+    return String(this.item?.isFavorite === true);
+  }
+
+  get favoriteLabel() {
+    return this.item?.isFavorite ? "Remove from favorites" : "Add to favorites";
+  }
+
   handleFavorite() {
     this.fire("favorite");
   }
