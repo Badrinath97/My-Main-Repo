@@ -6,6 +6,7 @@ import {
   STATUS,
   collectionOptions,
   customSeasonName,
+  posterTheme,
   reduceErrors
 } from "c/mediaTrackerUtils";
 
@@ -288,6 +289,65 @@ export default class MediaItemForm extends LightningModal {
 
   get saveLabel() {
     return this.isSaving ? "Saving..." : "Save";
+  }
+
+  // ------------------------------------------------- layout and preview
+
+  /** Poster URL whose image failed to load (the preview then shows a placeholder). */
+  failedPosterUrl;
+
+  get showPosterPreview() {
+    const url = this.draft.posterUrl;
+    return Boolean(url) && url !== this.failedPosterUrl;
+  }
+
+  /** The URL is set but the image would not load (bad link or untrusted site). */
+  get posterLoadFailed() {
+    return Boolean(this.draft.posterUrl) && !this.showPosterPreview;
+  }
+
+  get posterPlaceholderClass() {
+    return `preview preview_placeholder theme_${posterTheme(this.draft.title)}`;
+  }
+
+  get typeIcon() {
+    return this.currentConfig?.iconName || "utility:open_folder";
+  }
+
+  get previewTitle() {
+    return (this.draft.title || "").trim() || "Untitled";
+  }
+
+  get favoriteClass() {
+    return `gloss gloss_fav fav-toggle${this.draft.isFavorite ? " gloss_on" : ""}`;
+  }
+
+  get favoritePressed() {
+    return String(this.draft.isFavorite === true);
+  }
+
+  get favoriteLabel() {
+    return this.draft.isFavorite ? "Remove from favorites" : "Add to favorites";
+  }
+
+  get showProgressSection() {
+    return this.tracksSeasons || this.tracksMovies || this.showOverallProgress;
+  }
+
+  get showCollectionSection() {
+    return this.visible.collection;
+  }
+
+  get showPosterNotesSection() {
+    return this.visible.posterUrl || this.visible.notes;
+  }
+
+  handlePosterError() {
+    this.failedPosterUrl = this.draft.posterUrl;
+  }
+
+  handleFavoriteToggle() {
+    this.draft = { ...this.draft, isFavorite: !this.draft.isFavorite };
   }
 
   handleChange(event) {

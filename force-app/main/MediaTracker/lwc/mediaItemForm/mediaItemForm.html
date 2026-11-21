@@ -2,471 +2,557 @@
   <lightning-modal-header label={label}></lightning-modal-header>
 
   <lightning-modal-body>
-    <template lwc:if={error}>
-      <div
-        class="slds-notify slds-notify_alert slds-alert_error slds-m-bottom_small"
-        role="alert"
-      >
-        {error}
-      </div>
-    </template>
+    <div class="surface">
+      <template lwc:if={error}>
+        <div class="alert" role="alert">
+          <lightning-icon
+            icon-name="utility:error"
+            size="x-small"
+            variant="inverse"
+          ></lightning-icon>
+          <span>{error}</span>
+        </div>
+      </template>
 
-    <div class="slds-grid slds-wrap slds-gutters_small">
-      <div class="slds-col slds-size_1-of-1">
-        <lightning-input
-          data-field="title"
-          label="Title"
-          required
-          max-length="80"
-          value={draft.title}
-          onchange={handleChange}
-        ></lightning-input>
-      </div>
-
-      <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
-        <lightning-combobox
-          data-field="mediaType"
-          label="Type"
-          required
-          options={typeOptions}
-          value={draft.mediaType}
-          onchange={handleChange}
-        ></lightning-combobox>
-      </div>
-      <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
-        <lightning-combobox
-          data-field="status"
-          label="Status"
-          required
-          options={resolvedStatusOptions}
-          value={draft.status}
-          onchange={handleChange}
-        ></lightning-combobox>
-      </div>
-
-      <template lwc:if={tracksSeasons}>
-        <div class="slds-col slds-size_1-of-1 slds-m-top_small">
-          <div class="seasons-header">
-            <span class="slds-text-title_bold">Seasons</span>
-            <button
-              class="gloss gbtn gloss_add"
-              data-id="add-season"
-              onclick={handleAddSeason}
-            >
-              <lightning-icon
-                icon-name="utility:add"
-                size="x-small"
-              ></lightning-icon>
-              Add season
-            </button>
-          </div>
-          <template lwc:if={hasSeasons}>
-            <template for:each={seasonRows} for:item="row">
-              <div key={row.key} class="season-row">
-                <lightning-input
-                  class="cell cell_number"
-                  type="number"
-                  label="Season"
-                  min="0"
-                  required
-                  data-index={row.index}
-                  data-season-field="seasonNumber"
-                  value={row.seasonNumber}
-                  onchange={handleSeasonChange}
-                ></lightning-input>
-                <lightning-input
-                  class="cell cell_name"
-                  label="Season name"
-                  placeholder="Optional, e.g. Shippuden"
-                  max-length="80"
-                  data-index={row.index}
-                  data-season-field="name"
-                  value={row.name}
-                  onchange={handleSeasonChange}
-                ></lightning-input>
-                <lightning-input
-                  class="cell cell_count"
-                  type="number"
-                  label="Episodes"
-                  min="0"
-                  field-level-help="Leave blank while the season is still airing."
-                  data-index={row.index}
-                  data-season-field="episodeCount"
-                  value={row.episodeCount}
-                  onchange={handleSeasonChange}
-                ></lightning-input>
-                <lightning-input
-                  class="cell cell_count"
-                  type="number"
-                  label="Watched"
-                  min="0"
-                  max={row.maxWatched}
-                  data-index={row.index}
-                  data-season-field="episodesWatched"
-                  value={row.episodesWatched}
-                  onchange={handleSeasonChange}
-                ></lightning-input>
-                <template lwc:if={visible.seasonAiredDate}>
-                  <lightning-input
-                    class="cell cell_date"
-                    type="date"
-                    label="Aired"
-                    field-level-help="Date the season started airing."
-                    data-index={row.index}
-                    data-season-field="airedDate"
-                    value={row.airedDate}
-                    onchange={handleSeasonChange}
-                  ></lightning-input>
-                </template>
-                <template lwc:if={visible.seasonCompletedDate}>
-                  <lightning-input
-                    class="cell cell_date"
-                    type="date"
-                    label="Completed"
-                    field-level-help="Date the season finished airing. Leave blank while it is still airing."
-                    min={row.airedDate}
-                    data-index={row.index}
-                    data-season-field="completedDate"
-                    value={row.completedDate}
-                    onchange={handleSeasonChange}
-                  ></lightning-input>
-                </template>
-                <button
-                  class="season-remove gloss gloss_danger"
-                  title="Remove season"
-                  aria-label="Remove season"
-                  data-index={row.index}
-                  onclick={handleRemoveSeason}
-                >
-                  <lightning-icon
-                    icon-name="utility:delete"
-                    size="xx-small"
-                  ></lightning-icon>
-                </button>
-              </div>
-            </template>
-            <p
-              class="slds-text-body_small slds-text-color_weak slds-m-top_x-small"
-            >
-              {seasonSummary}
-            </p>
+      <!-- ============================================== hero: basics -->
+      <section class="section glass hero">
+        <div class="preview-wrap">
+          <template lwc:if={showPosterPreview}>
+            <img
+              class="preview"
+              src={draft.posterUrl}
+              alt={previewTitle}
+              onerror={handlePosterError}
+            />
           </template>
           <template lwc:else>
-            <p
-              class="slds-text-body_small slds-text-color_weak slds-m-top_x-small"
-            >
-              Add seasons to track episodes per season. Overall progress is then
-              calculated for you.
-            </p>
-          </template>
-        </div>
-      </template>
-
-      <template lwc:if={tracksMovies}>
-        <div class="slds-col slds-size_1-of-1 slds-m-top_small">
-          <div class="seasons-header">
-            <span class="slds-text-title_bold">Movies</span>
-            <button
-              class="gloss gbtn gloss_add"
-              data-id="add-movie"
-              onclick={handleAddMovie}
-            >
+            <div class={posterPlaceholderClass}>
               <lightning-icon
-                icon-name="utility:add"
-                size="x-small"
+                icon-name={typeIcon}
+                size="medium"
+                variant="inverse"
               ></lightning-icon>
-              Add movie
-            </button>
-          </div>
-          <template lwc:if={hasMovies}>
-            <template for:each={movieRows} for:item="row">
-              <div key={row.key} class="movie-row">
-                <lightning-input
-                  class="cell cell_title"
-                  label={row.label}
-                  placeholder="Movie title"
-                  required
-                  max-length="80"
-                  data-index={row.index}
-                  data-movie-field="name"
-                  value={row.name}
-                  onchange={handleMovieChange}
-                ></lightning-input>
-                <template lwc:if={visible.movieAiredDate}>
-                  <lightning-input
-                    class="cell cell_date"
-                    type="date"
-                    label="Aired"
-                    field-level-help="Release date of the movie."
-                    data-index={row.index}
-                    data-movie-field="airedDate"
-                    value={row.airedDate}
-                    onchange={handleMovieChange}
-                  ></lightning-input>
-                </template>
-                <lightning-input
-                  class="movie-watched"
-                  type="checkbox"
-                  label="Watched"
-                  data-index={row.index}
-                  data-movie-field="watched"
-                  checked={row.watched}
-                  onchange={handleMovieChange}
-                ></lightning-input>
-                <button
-                  class="season-remove gloss gloss_danger"
-                  title="Remove movie"
-                  aria-label="Remove movie"
-                  data-index={row.index}
-                  onclick={handleRemoveMovie}
-                >
-                  <lightning-icon
-                    icon-name="utility:delete"
-                    size="xx-small"
-                  ></lightning-icon>
-                </button>
-              </div>
-            </template>
-            <p
-              class="slds-text-body_small slds-text-color_weak slds-m-top_x-small"
-            >
-              {movieSummary}
-            </p>
+            </div>
           </template>
-          <template lwc:else>
-            <p
-              class="slds-text-body_small slds-text-color_weak slds-m-top_x-small"
-            >
-              Add films related to this title (e.g. Demon Slayer: Mugen Train).
-              They are tracked separately from episodes.
-            </p>
-          </template>
+          <button
+            class={favoriteClass}
+            data-id="favorite"
+            aria-pressed={favoritePressed}
+            aria-label={favoriteLabel}
+            title={favoriteLabel}
+            onclick={handleFavoriteToggle}
+          >
+            &#9829;
+          </button>
         </div>
-      </template>
 
-      <template lwc:if={showOverallProgress}>
-        <div class="slds-col slds-size_1-of-2">
-          <lightning-input
-            data-field="progressCurrent"
-            type="number"
-            label={progressCurrentLabel}
-            min="0"
-            max={progressMax}
-            value={draft.progressCurrent}
-            onchange={handleChange}
-          ></lightning-input>
-        </div>
-        <div class="slds-col slds-size_1-of-2">
-          <lightning-input
-            data-field="progressTotal"
-            type="number"
-            label={progressTotalLabel}
-            min="0"
-            field-level-help="Leave blank if unknown or still releasing."
-            value={draft.progressTotal}
-            onchange={handleChange}
-          ></lightning-input>
-        </div>
-      </template>
-
-      <!-- Each block below can be hidden per media type (Hidden_Form_Fields__c). -->
-      <template lwc:if={visible.rating}>
-        <div class="slds-col slds-size_1-of-2 slds-medium-size_1-of-4">
-          <lightning-input
-            data-field="rating"
-            type="number"
-            label="Rating (0-10)"
-            min="0"
-            max="10"
-            step="0.5"
-            value={draft.rating}
-            onchange={handleChange}
-          ></lightning-input>
-        </div>
-      </template>
-      <template lwc:if={visible.releaseYear}>
-        <div class="slds-col slds-size_1-of-2 slds-medium-size_1-of-4">
-          <lightning-input
-            data-field="releaseYear"
-            type="number"
-            label="Release year"
-            min="1800"
-            max="2200"
-            value={draft.releaseYear}
-            onchange={handleChange}
-          ></lightning-input>
-        </div>
-      </template>
-      <template lwc:if={visible.genre}>
-        <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-4">
-          <lightning-input
-            data-field="genre"
-            label="Genre"
-            value={draft.genre}
-            onchange={handleChange}
-          ></lightning-input>
-        </div>
-      </template>
-      <template lwc:if={visible.platform}>
-        <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-4">
-          <lightning-input
-            data-field="platform"
-            label="Platform"
-            placeholder="Netflix, Kindle..."
-            value={draft.platform}
-            onchange={handleChange}
-          ></lightning-input>
-        </div>
-      </template>
-      <template lwc:if={showPlatformUrl}>
-        <div class="slds-col slds-size_1-of-1">
-          <lightning-input
-            data-field="platformUrl"
-            type="url"
-            label="Platform link"
-            placeholder="https://... (store, download or streaming page)"
-            field-level-help="Shown as a link on the platform name in the details window."
-            max-length="255"
-            value={draft.platformUrl}
-            onchange={handleChange}
-          ></lightning-input>
-        </div>
-      </template>
-
-      <template lwc:if={visible.airedDate}>
-        <div class="slds-col slds-size_1-of-2">
-          <lightning-input
-            data-field="airedDate"
-            type="date"
-            label="Aired date"
-            field-level-help="Release date. Fills in the release year when that is left blank."
-            value={draft.airedDate}
-            onchange={handleChange}
-          ></lightning-input>
-        </div>
-      </template>
-      <template lwc:if={visible.startDate}>
-        <div class="slds-col slds-size_1-of-2">
-          <lightning-input
-            data-field="startDate"
-            type="date"
-            label="Started"
-            value={draft.startDate}
-            onchange={handleChange}
-          ></lightning-input>
-        </div>
-      </template>
-      <template lwc:if={showCompletedDate}>
-        <div class="slds-col slds-size_1-of-2">
-          <lightning-input
-            data-field="completedDate"
-            type="date"
-            label="Completed"
-            value={draft.completedDate}
-            onchange={handleChange}
-          ></lightning-input>
-        </div>
-      </template>
-
-      <template lwc:if={visible.language}>
-        <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
-          <lightning-combobox
-            data-field="language"
-            label="Language"
-            options={languageComboOptions}
-            value={languageValue}
-            onchange={handleChange}
-          ></lightning-combobox>
-        </div>
-      </template>
-      <template lwc:if={visible.collection}>
-        <div class="slds-col slds-size_2-of-3 slds-medium-size_1-of-3">
-          <lightning-combobox
-            data-field="collectionId"
-            label="Collection"
-            field-level-help="Franchise, universe or series, e.g. Marvel Cinematic Universe."
-            options={collectionComboOptions}
-            value={collectionValue}
-            onchange={handleChange}
-          ></lightning-combobox>
-        </div>
-      </template>
-      <template lwc:if={showCollectionOrder}>
-        <div class="slds-col slds-size_1-of-3 slds-medium-size_1-of-6">
-          <lightning-input
-            data-field="collectionOrder"
-            type="number"
-            label="Order"
-            min="0"
-            field-level-help="Position in the collection (release or watch order)."
-            value={draft.collectionOrder}
-            onchange={handleChange}
-          ></lightning-input>
-        </div>
-      </template>
-      <template lwc:if={showNewCollection}>
-        <div class="slds-col slds-size_1-of-1">
-          <div class="new-collection">
+        <div class="hero-fields slds-grid slds-wrap slds-gutters_small">
+          <div class="slds-col slds-size_1-of-1">
             <lightning-input
-              data-collection-field="name"
-              label="New collection name"
-              placeholder="Marvel Cinematic Universe"
+              data-field="title"
+              label="Title"
               required
               max-length="80"
-              value={newCollection.name}
-              onchange={handleNewCollectionChange}
+              value={draft.title}
+              onchange={handleChange}
             ></lightning-input>
+          </div>
+
+          <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
             <lightning-combobox
-              data-collection-field="collectionType"
-              label="Collection type"
-              placeholder="Choose a type"
-              options={collectionTypeOptions}
-              value={newCollection.collectionType}
-              onchange={handleNewCollectionChange}
+              data-field="mediaType"
+              label="Type"
+              required
+              options={typeOptions}
+              value={draft.mediaType}
+              onchange={handleChange}
             ></lightning-combobox>
+          </div>
+          <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
             <lightning-combobox
-              data-collection-field="parentId"
-              label="Part of"
-              options={newCollectionParentOptions}
-              value={newCollectionParentValue}
-              onchange={handleNewCollectionChange}
+              data-field="status"
+              label="Status"
+              required
+              options={resolvedStatusOptions}
+              value={draft.status}
+              onchange={handleChange}
             ></lightning-combobox>
           </div>
         </div>
+      </section>
+
+      <!-- ===================================================== progress -->
+      <template lwc:if={showProgressSection}>
+        <section class="section glass">
+          <h3 class="section-title">
+            <span class="badge-icon badge-icon_progress">
+              <lightning-icon
+                icon-name="utility:trending"
+                size="xx-small"
+                variant="inverse"
+              ></lightning-icon>
+            </span>
+            Progress
+          </h3>
+          <div class="slds-grid slds-wrap slds-gutters_small">
+            <template lwc:if={tracksSeasons}>
+              <div class="slds-col slds-size_1-of-1">
+                <div class="seasons-header">
+                  <span class="sub-title">Seasons</span>
+                  <button
+                    class="gloss gbtn gloss_add"
+                    data-id="add-season"
+                    onclick={handleAddSeason}
+                  >
+                    <lightning-icon
+                      icon-name="utility:add"
+                      size="x-small"
+                    ></lightning-icon>
+                    Add season
+                  </button>
+                </div>
+                <template lwc:if={hasSeasons}>
+                  <template for:each={seasonRows} for:item="row">
+                    <div key={row.key} class="season-row">
+                      <lightning-input
+                        class="cell cell_number"
+                        type="number"
+                        label="Season"
+                        min="0"
+                        required
+                        data-index={row.index}
+                        data-season-field="seasonNumber"
+                        value={row.seasonNumber}
+                        onchange={handleSeasonChange}
+                      ></lightning-input>
+                      <lightning-input
+                        class="cell cell_name"
+                        label="Season name"
+                        placeholder="Optional, e.g. Shippuden"
+                        max-length="80"
+                        data-index={row.index}
+                        data-season-field="name"
+                        value={row.name}
+                        onchange={handleSeasonChange}
+                      ></lightning-input>
+                      <lightning-input
+                        class="cell cell_count"
+                        type="number"
+                        label="Episodes"
+                        min="0"
+                        field-level-help="Leave blank while the season is still airing."
+                        data-index={row.index}
+                        data-season-field="episodeCount"
+                        value={row.episodeCount}
+                        onchange={handleSeasonChange}
+                      ></lightning-input>
+                      <lightning-input
+                        class="cell cell_count"
+                        type="number"
+                        label="Watched"
+                        min="0"
+                        max={row.maxWatched}
+                        data-index={row.index}
+                        data-season-field="episodesWatched"
+                        value={row.episodesWatched}
+                        onchange={handleSeasonChange}
+                      ></lightning-input>
+                      <template lwc:if={visible.seasonAiredDate}>
+                        <lightning-input
+                          class="cell cell_date"
+                          type="date"
+                          label="Aired"
+                          field-level-help="Date the season started airing."
+                          data-index={row.index}
+                          data-season-field="airedDate"
+                          value={row.airedDate}
+                          onchange={handleSeasonChange}
+                        ></lightning-input>
+                      </template>
+                      <template lwc:if={visible.seasonCompletedDate}>
+                        <lightning-input
+                          class="cell cell_date"
+                          type="date"
+                          label="Completed"
+                          field-level-help="Date the season finished airing. Leave blank while it is still airing."
+                          min={row.airedDate}
+                          data-index={row.index}
+                          data-season-field="completedDate"
+                          value={row.completedDate}
+                          onchange={handleSeasonChange}
+                        ></lightning-input>
+                      </template>
+                      <button
+                        class="season-remove gloss gloss_danger"
+                        title="Remove season"
+                        aria-label="Remove season"
+                        data-index={row.index}
+                        onclick={handleRemoveSeason}
+                      >
+                        <lightning-icon
+                          icon-name="utility:delete"
+                          size="xx-small"
+                        ></lightning-icon>
+                      </button>
+                    </div>
+                  </template>
+                  <p class="hint">{seasonSummary}</p>
+                </template>
+                <template lwc:else>
+                  <p class="hint hint_empty">
+                    Add seasons to track episodes per season. Overall progress
+                    is then calculated for you.
+                  </p>
+                </template>
+              </div>
+            </template>
+
+            <template lwc:if={tracksMovies}>
+              <div class="slds-col slds-size_1-of-1 slds-m-top_small">
+                <div class="seasons-header">
+                  <span class="sub-title">Movies</span>
+                  <button
+                    class="gloss gbtn gloss_add"
+                    data-id="add-movie"
+                    onclick={handleAddMovie}
+                  >
+                    <lightning-icon
+                      icon-name="utility:add"
+                      size="x-small"
+                    ></lightning-icon>
+                    Add movie
+                  </button>
+                </div>
+                <template lwc:if={hasMovies}>
+                  <template for:each={movieRows} for:item="row">
+                    <div key={row.key} class="movie-row">
+                      <lightning-input
+                        class="cell cell_title"
+                        label={row.label}
+                        placeholder="Movie title"
+                        required
+                        max-length="80"
+                        data-index={row.index}
+                        data-movie-field="name"
+                        value={row.name}
+                        onchange={handleMovieChange}
+                      ></lightning-input>
+                      <template lwc:if={visible.movieAiredDate}>
+                        <lightning-input
+                          class="cell cell_date"
+                          type="date"
+                          label="Aired"
+                          field-level-help="Release date of the movie."
+                          data-index={row.index}
+                          data-movie-field="airedDate"
+                          value={row.airedDate}
+                          onchange={handleMovieChange}
+                        ></lightning-input>
+                      </template>
+                      <lightning-input
+                        class="movie-watched"
+                        type="checkbox"
+                        label="Watched"
+                        data-index={row.index}
+                        data-movie-field="watched"
+                        checked={row.watched}
+                        onchange={handleMovieChange}
+                      ></lightning-input>
+                      <button
+                        class="season-remove gloss gloss_danger"
+                        title="Remove movie"
+                        aria-label="Remove movie"
+                        data-index={row.index}
+                        onclick={handleRemoveMovie}
+                      >
+                        <lightning-icon
+                          icon-name="utility:delete"
+                          size="xx-small"
+                        ></lightning-icon>
+                      </button>
+                    </div>
+                  </template>
+                  <p class="hint">{movieSummary}</p>
+                </template>
+                <template lwc:else>
+                  <p class="hint hint_empty">
+                    Add films related to this title (e.g. Demon Slayer: Mugen
+                    Train). They are tracked separately from episodes.
+                  </p>
+                </template>
+              </div>
+            </template>
+
+            <template lwc:if={showOverallProgress}>
+              <div class="slds-col slds-size_1-of-2">
+                <lightning-input
+                  data-field="progressCurrent"
+                  type="number"
+                  label={progressCurrentLabel}
+                  min="0"
+                  max={progressMax}
+                  value={draft.progressCurrent}
+                  onchange={handleChange}
+                ></lightning-input>
+              </div>
+              <div class="slds-col slds-size_1-of-2">
+                <lightning-input
+                  data-field="progressTotal"
+                  type="number"
+                  label={progressTotalLabel}
+                  min="0"
+                  field-level-help="Leave blank if unknown or still releasing."
+                  value={draft.progressTotal}
+                  onchange={handleChange}
+                ></lightning-input>
+              </div>
+            </template>
+          </div>
+        </section>
       </template>
 
-      <template lwc:if={visible.posterUrl}>
-        <div class="slds-col slds-size_1-of-1">
-          <lightning-input
-            data-field="posterUrl"
-            type="url"
-            label="Poster image URL"
-            value={draft.posterUrl}
-            onchange={handleChange}
-          ></lightning-input>
+      <!-- ====================================================== details -->
+      <!-- Each block below can be hidden per media type (Hidden_Form_Fields__c). -->
+      <section class="section glass">
+        <h3 class="section-title">
+          <span class="badge-icon badge-icon_details">
+            <lightning-icon
+              icon-name="utility:info_alt"
+              size="xx-small"
+              variant="inverse"
+            ></lightning-icon>
+          </span>
+          Details
+        </h3>
+        <div class="slds-grid slds-wrap slds-gutters_small">
+          <template lwc:if={visible.rating}>
+            <div class="slds-col slds-size_1-of-2 slds-medium-size_1-of-4">
+              <lightning-input
+                data-field="rating"
+                type="number"
+                label="Rating (0-10)"
+                min="0"
+                max="10"
+                step="0.5"
+                value={draft.rating}
+                onchange={handleChange}
+              ></lightning-input>
+            </div>
+          </template>
+          <template lwc:if={visible.releaseYear}>
+            <div class="slds-col slds-size_1-of-2 slds-medium-size_1-of-4">
+              <lightning-input
+                data-field="releaseYear"
+                type="number"
+                label="Release year"
+                min="1800"
+                max="2200"
+                value={draft.releaseYear}
+                onchange={handleChange}
+              ></lightning-input>
+            </div>
+          </template>
+          <template lwc:if={visible.genre}>
+            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-4">
+              <lightning-input
+                data-field="genre"
+                label="Genre"
+                value={draft.genre}
+                onchange={handleChange}
+              ></lightning-input>
+            </div>
+          </template>
+          <template lwc:if={visible.platform}>
+            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-4">
+              <lightning-input
+                data-field="platform"
+                label="Platform"
+                placeholder="Netflix, Kindle..."
+                value={draft.platform}
+                onchange={handleChange}
+              ></lightning-input>
+            </div>
+          </template>
+          <template lwc:if={showPlatformUrl}>
+            <div class="slds-col slds-size_1-of-1">
+              <lightning-input
+                data-field="platformUrl"
+                type="url"
+                label="Platform link"
+                placeholder="https://... (store, download or streaming page)"
+                field-level-help="Shown as a link on the platform name in the details window."
+                max-length="255"
+                value={draft.platformUrl}
+                onchange={handleChange}
+              ></lightning-input>
+            </div>
+          </template>
+
+          <template lwc:if={visible.airedDate}>
+            <div class="slds-col slds-size_1-of-2">
+              <lightning-input
+                data-field="airedDate"
+                type="date"
+                label="Aired date"
+                field-level-help="Release date. Fills in the release year when that is left blank."
+                value={draft.airedDate}
+                onchange={handleChange}
+              ></lightning-input>
+            </div>
+          </template>
+          <template lwc:if={visible.startDate}>
+            <div class="slds-col slds-size_1-of-2">
+              <lightning-input
+                data-field="startDate"
+                type="date"
+                label="Started"
+                value={draft.startDate}
+                onchange={handleChange}
+              ></lightning-input>
+            </div>
+          </template>
+          <template lwc:if={showCompletedDate}>
+            <div class="slds-col slds-size_1-of-2">
+              <lightning-input
+                data-field="completedDate"
+                type="date"
+                label="Completed"
+                value={draft.completedDate}
+                onchange={handleChange}
+              ></lightning-input>
+            </div>
+          </template>
+
+          <template lwc:if={visible.language}>
+            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
+              <lightning-combobox
+                data-field="language"
+                label="Language"
+                options={languageComboOptions}
+                value={languageValue}
+                onchange={handleChange}
+              ></lightning-combobox>
+            </div>
+          </template>
         </div>
+      </section>
+
+      <!-- =================================================== collection -->
+      <template lwc:if={showCollectionSection}>
+        <section class="section glass">
+          <h3 class="section-title">
+            <span class="badge-icon badge-icon_collection">
+              <lightning-icon
+                icon-name="utility:layers"
+                size="xx-small"
+                variant="inverse"
+              ></lightning-icon>
+            </span>
+            Collection
+          </h3>
+          <div class="slds-grid slds-wrap slds-gutters_small">
+            <div class="slds-col slds-size_2-of-3 slds-medium-size_1-of-2">
+              <lightning-combobox
+                data-field="collectionId"
+                label="Collection"
+                field-level-help="Franchise, universe or series, e.g. Marvel Cinematic Universe."
+                options={collectionComboOptions}
+                value={collectionValue}
+                onchange={handleChange}
+              ></lightning-combobox>
+            </div>
+            <template lwc:if={showCollectionOrder}>
+              <div class="slds-col slds-size_1-of-3 slds-medium-size_1-of-6">
+                <lightning-input
+                  data-field="collectionOrder"
+                  type="number"
+                  label="Order"
+                  min="0"
+                  field-level-help="Position in the collection (release or watch order)."
+                  value={draft.collectionOrder}
+                  onchange={handleChange}
+                ></lightning-input>
+              </div>
+            </template>
+            <template lwc:if={showNewCollection}>
+              <div class="slds-col slds-size_1-of-1">
+                <div class="new-collection">
+                  <lightning-input
+                    data-collection-field="name"
+                    label="New collection name"
+                    placeholder="Marvel Cinematic Universe"
+                    required
+                    max-length="80"
+                    value={newCollection.name}
+                    onchange={handleNewCollectionChange}
+                  ></lightning-input>
+                  <lightning-combobox
+                    data-collection-field="collectionType"
+                    label="Collection type"
+                    placeholder="Choose a type"
+                    options={collectionTypeOptions}
+                    value={newCollection.collectionType}
+                    onchange={handleNewCollectionChange}
+                  ></lightning-combobox>
+                  <lightning-combobox
+                    data-collection-field="parentId"
+                    label="Part of"
+                    options={newCollectionParentOptions}
+                    value={newCollectionParentValue}
+                    onchange={handleNewCollectionChange}
+                  ></lightning-combobox>
+                </div>
+              </div>
+            </template>
+          </div>
+        </section>
       </template>
-      <template lwc:if={visible.notes}>
-        <div class="slds-col slds-size_1-of-1">
-          <lightning-textarea
-            data-field="notes"
-            label="Notes"
-            value={draft.notes}
-            onchange={handleChange}
-          ></lightning-textarea>
-        </div>
+
+      <!-- =============================================== poster & notes -->
+      <template lwc:if={showPosterNotesSection}>
+        <section class="section glass">
+          <h3 class="section-title">
+            <span class="badge-icon badge-icon_poster">
+              <lightning-icon
+                icon-name="utility:image"
+                size="xx-small"
+                variant="inverse"
+              ></lightning-icon>
+            </span>
+            Poster &amp; notes
+          </h3>
+          <div class="slds-grid slds-wrap slds-gutters_small">
+            <template lwc:if={visible.posterUrl}>
+              <div class="slds-col slds-size_1-of-1">
+                <lightning-input
+                  data-field="posterUrl"
+                  type="url"
+                  label="Poster image URL"
+                  placeholder="https://... (right-click an image, Copy image address)"
+                  value={draft.posterUrl}
+                  onchange={handleChange}
+                ></lightning-input>
+                <template lwc:if={posterLoadFailed}>
+                  <p class="hint hint_warning" role="status">
+                    This image can't be shown. Check the link, and add its site
+                    to Setup &gt; Trusted URLs (img-src).
+                  </p>
+                </template>
+              </div>
+            </template>
+            <template lwc:if={visible.notes}>
+              <div class="slds-col slds-size_1-of-1">
+                <lightning-textarea
+                  data-field="notes"
+                  label="Notes"
+                  value={draft.notes}
+                  onchange={handleChange}
+                ></lightning-textarea>
+              </div>
+            </template>
+          </div>
+        </section>
       </template>
-      <div class="slds-col slds-size_1-of-1 slds-p-top_x-small">
-        <lightning-input
-          data-field="isFavorite"
-          type="toggle"
-          label="Favorite"
-          message-toggle-active=""
-          message-toggle-inactive=""
-          checked={draft.isFavorite}
-          onchange={handleChange}
-        ></lightning-input>
-      </div>
     </div>
   </lightning-modal-body>
 
